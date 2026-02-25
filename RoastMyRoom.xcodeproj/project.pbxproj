@@ -6,13 +6,58 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7E0BF8832F4E1C0E00BAFC68 /* SPEC.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8822F4E1C0E00BAFC68 /* SPEC.md */; };
+		7E0BF8842F4E1C0E00BAFC68 /* CLAUDE.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */; };
+		7E0BF8FE2F4E6B1E00BAFC68 /* gotrue-version in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8EF2F4E6B1E00BAFC68 /* gotrue-version */; };
+		7E0BF8FF2F4E6B1E00BAFC68 /* postgres-version in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F12F4E6B1E00BAFC68 /* postgres-version */; };
+		7E0BF9002F4E6B1E00BAFC68 /* storage-migration in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F42F4E6B1E00BAFC68 /* storage-migration */; };
+		7E0BF9012F4E6B1E00BAFC68 /* project-ref in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F22F4E6B1E00BAFC68 /* project-ref */; };
+		7E0BF9022F4E6B1E00BAFC68 /* pooler-url in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F02F4E6B1E00BAFC68 /* pooler-url */; };
+		7E0BF9032F4E6B1E00BAFC68 /* cli-latest in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8EE2F4E6B1E00BAFC68 /* cli-latest */; };
+		7E0BF9042F4E6B1E00BAFC68 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8FB2F4E6B1E00BAFC68 /* .gitignore */; };
+		7E0BF9052F4E6B1E00BAFC68 /* rest-version in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F32F4E6B1E00BAFC68 /* rest-version */; };
+		7E0BF9062F4E6B1E00BAFC68 /* storage-version in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8F52F4E6B1E00BAFC68 /* storage-version */; };
+		7E0BF9072F4E6B1E00BAFC68 /* _current_branch in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8EC2F4E6B1E00BAFC68 /* _current_branch */; };
+		7E0BF9082F4E6B1E00BAFC68 /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */; };
+		7E0BF90A2F4E6D5E00BAFC68 /* roomscore-prompt-v2.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoastMyRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		7E0BF8822F4E1C0E00BAFC68 /* SPEC.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SPEC.md; sourceTree = "<group>"; };
+		7E0BF8EC2F4E6B1E00BAFC68 /* _current_branch */ = {isa = PBXFileReference; lastKnownFileType = text; path = _current_branch; sourceTree = "<group>"; };
+		7E0BF8EE2F4E6B1E00BAFC68 /* cli-latest */ = {isa = PBXFileReference; lastKnownFileType = text; path = "cli-latest"; sourceTree = "<group>"; };
+		7E0BF8EF2F4E6B1E00BAFC68 /* gotrue-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "gotrue-version"; sourceTree = "<group>"; };
+		7E0BF8F02F4E6B1E00BAFC68 /* pooler-url */ = {isa = PBXFileReference; lastKnownFileType = text; path = "pooler-url"; sourceTree = "<group>"; };
+		7E0BF8F12F4E6B1E00BAFC68 /* postgres-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "postgres-version"; sourceTree = "<group>"; };
+		7E0BF8F22F4E6B1E00BAFC68 /* project-ref */ = {isa = PBXFileReference; lastKnownFileType = text; path = "project-ref"; sourceTree = "<group>"; };
+		7E0BF8F32F4E6B1E00BAFC68 /* rest-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "rest-version"; sourceTree = "<group>"; };
+		7E0BF8F42F4E6B1E00BAFC68 /* storage-migration */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-migration"; sourceTree = "<group>"; };
+		7E0BF8F52F4E6B1E00BAFC68 /* storage-version */ = {isa = PBXFileReference; lastKnownFileType = text; path = "storage-version"; sourceTree = "<group>"; };
+		7E0BF8F72F4E6B1E00BAFC68 /* index.ts */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.typescript; path = index.ts; sourceTree = "<group>"; };
+		7E0BF8FB2F4E6B1E00BAFC68 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
+		7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "roomscore-prompt-v2.md"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7E0BF8BF2F4E1EEA00BAFC68 /* Exceptions for "RoastMyRoom" folder in "RoastMyRoom" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7E0BF8702F4E1B9800BAFC68 /* RoastMyRoom */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7E0BF8732F4E1B9800BAFC68 /* RoastMyRoom */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7E0BF8BF2F4E1EEA00BAFC68 /* Exceptions for "RoastMyRoom" folder in "RoastMyRoom" target */,
+			);
 			path = RoastMyRoom;
 			sourceTree = "<group>";
 		};
@@ -34,6 +79,10 @@
 			children = (
 				7E0BF8732F4E1B9800BAFC68 /* RoastMyRoom */,
 				7E0BF8722F4E1B9800BAFC68 /* Products */,
+				7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */,
+				7E0BF8822F4E1C0E00BAFC68 /* SPEC.md */,
+				7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */,
+				7E0BF8FD2F4E6B1E00BAFC68 /* supabase */,
 			);
 			sourceTree = "<group>";
 		};
@@ -43,6 +92,65 @@
 				7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7E0BF8ED2F4E6B1E00BAFC68 /* .branches */ = {
+			isa = PBXGroup;
+			children = (
+				7E0BF8EC2F4E6B1E00BAFC68 /* _current_branch */,
+			);
+			path = .branches;
+			sourceTree = "<group>";
+		};
+		7E0BF8F62F4E6B1E00BAFC68 /* .temp */ = {
+			isa = PBXGroup;
+			children = (
+				7E0BF8EE2F4E6B1E00BAFC68 /* cli-latest */,
+				7E0BF8EF2F4E6B1E00BAFC68 /* gotrue-version */,
+				7E0BF8F02F4E6B1E00BAFC68 /* pooler-url */,
+				7E0BF8F12F4E6B1E00BAFC68 /* postgres-version */,
+				7E0BF8F22F4E6B1E00BAFC68 /* project-ref */,
+				7E0BF8F32F4E6B1E00BAFC68 /* rest-version */,
+				7E0BF8F42F4E6B1E00BAFC68 /* storage-migration */,
+				7E0BF8F52F4E6B1E00BAFC68 /* storage-version */,
+			);
+			path = .temp;
+			sourceTree = "<group>";
+		};
+		7E0BF8F82F4E6B1E00BAFC68 /* score */ = {
+			isa = PBXGroup;
+			children = (
+				7E0BF8F72F4E6B1E00BAFC68 /* index.ts */,
+			);
+			path = score;
+			sourceTree = "<group>";
+		};
+		7E0BF8F92F4E6B1E00BAFC68 /* functions */ = {
+			isa = PBXGroup;
+			children = (
+				7E0BF8F82F4E6B1E00BAFC68 /* score */,
+			);
+			path = functions;
+			sourceTree = "<group>";
+		};
+		7E0BF8FA2F4E6B1E00BAFC68 /* snippets */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = snippets;
+			sourceTree = "<group>";
+		};
+		7E0BF8FD2F4E6B1E00BAFC68 /* supabase */ = {
+			isa = PBXGroup;
+			children = (
+				7E0BF8ED2F4E6B1E00BAFC68 /* .branches */,
+				7E0BF8F62F4E6B1E00BAFC68 /* .temp */,
+				7E0BF8F92F4E6B1E00BAFC68 /* functions */,
+				7E0BF8FA2F4E6B1E00BAFC68 /* snippets */,
+				7E0BF8FB2F4E6B1E00BAFC68 /* .gitignore */,
+				7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */,
+			);
+			path = supabase;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -91,6 +199,9 @@
 			knownRegions = (
 				en,
 				Base,
+				fr,
+				es,
+				de,
 			);
 			mainGroup = 7E0BF8682F4E1B9800BAFC68;
 			minimizedProjectReferenceProxies = 1;
@@ -109,6 +220,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E0BF8FE2F4E6B1E00BAFC68 /* gotrue-version in Resources */,
+				7E0BF90A2F4E6D5E00BAFC68 /* roomscore-prompt-v2.md in Resources */,
+				7E0BF8FF2F4E6B1E00BAFC68 /* postgres-version in Resources */,
+				7E0BF9002F4E6B1E00BAFC68 /* storage-migration in Resources */,
+				7E0BF9012F4E6B1E00BAFC68 /* project-ref in Resources */,
+				7E0BF9022F4E6B1E00BAFC68 /* pooler-url in Resources */,
+				7E0BF9032F4E6B1E00BAFC68 /* cli-latest in Resources */,
+				7E0BF9042F4E6B1E00BAFC68 /* .gitignore in Resources */,
+				7E0BF9052F4E6B1E00BAFC68 /* rest-version in Resources */,
+				7E0BF9062F4E6B1E00BAFC68 /* storage-version in Resources */,
+				7E0BF9072F4E6B1E00BAFC68 /* _current_branch in Resources */,
+				7E0BF9082F4E6B1E00BAFC68 /* config.toml in Resources */,
+				7E0BF8832F4E1C0E00BAFC68 /* SPEC.md in Resources */,
+				7E0BF8842F4E1C0E00BAFC68 /* CLAUDE.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -256,11 +381,13 @@
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RoastMyRoom/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Roast​My​Room needs camera access to photograph your rooms and score them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -269,11 +396,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -288,11 +419,13 @@
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RoastMyRoom/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Roast​My​Room needs camera access to photograph your rooms and score them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,11 +434,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
