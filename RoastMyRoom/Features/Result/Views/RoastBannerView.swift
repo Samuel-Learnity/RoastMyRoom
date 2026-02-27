@@ -50,10 +50,10 @@ struct RoastBannerView: View {
         let totalChars = roast.count
         guard totalChars > 0 else { return }
 
-        // ~30ms per character for a snappy typewriter
-        let interval: Double = 0.03
-        // Delay before starting to let the view settle
-        let startDelay: Double = 1.2
+        // ~15ms per character for a fast typewriter
+        let interval: Double = 0.015
+        // Short delay before starting to let the view settle
+        let startDelay: Double = 0.5
 
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(Int(startDelay * 1000)))

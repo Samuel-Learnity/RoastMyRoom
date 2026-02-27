@@ -8,9 +8,10 @@
 ## Build
 
 - **Scheme** : "RoastMyRoom"
-- **Simulateur par défaut** : iPhone 16 (iOS 26)
+- **Simulateur par défaut** : iPhone 17 Pro (iOS 26.2)
+- **Device de test** : Samuel's iPhone (iPhone 16 Pro, id: `00008140-001202460184801C`, CoreDevice: `00992BA0-472B-5500-810E-D896A8F380B8`)
 - Toujours utiliser `--quiet` avec xcodebuild
-- Utiliser les outils MCP xcode-tools plutôt que xcodebuild brut
+- Utiliser les outils MCP XcodeBuildMCP plutôt que xcodebuild brut
 
 ### Commandes MCP préférées
 

@@ -84,6 +84,10 @@ final class SubscriptionService {
     // MARK: - Status Check
 
     func checkSubscriptionStatus() async {
+        #if DEBUG
+        // In debug, keep premium enabled unless explicitly toggled off
+        return
+        #else
         var hasActiveSubscription = false
 
         for await result in Transaction.currentEntitlements {
@@ -96,6 +100,7 @@ final class SubscriptionService {
         }
 
         isPremium = hasActiveSubscription
+        #endif
     }
 
     // MARK: - Helpers

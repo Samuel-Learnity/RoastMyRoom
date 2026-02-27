@@ -14,9 +14,7 @@ struct ScanView: View {
                 cameraLayer
                 controlsOverlay
 
-                if showGuide {
-                    guideOverlay
-                }
+                guideOverlay
             }
             .ignoresSafeArea(edges: .all)
             .toolbar {
@@ -159,7 +157,8 @@ struct ScanView: View {
                 .background(.black.opacity(0.5), in: Capsule())
                 .padding(.bottom, 140)
         }
-        .transition(.opacity)
+        .frame(maxWidth: .infinity)
+        .opacity(showGuide ? 1 : 0)
         .onAppear {
             withAnimation(.easeOut(duration: 0.5).delay(2)) {
                 showGuide = false
