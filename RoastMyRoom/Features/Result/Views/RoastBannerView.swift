@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RoastBannerView: View {
     let roast: String
+    var animated: Bool = true
     @State private var visibleCharacters = 0
     @State private var appeared = false
 
@@ -28,21 +29,26 @@ struct RoastBannerView: View {
             Text(displayedText)
                 .font(.body)
                 .italic()
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentTransition(.numericText())
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.rsWarning.opacity(0.2), lineWidth: 1)
+        .aiGlow(
+            colors: [Color.rsWarning, .red, .orange, Color(red: 1.0, green: 0.3, blue: 0.1)],
+            cornerRadius: 20,
+            glowRadius: 10,
+            glowOpacity: 0.5
         )
         .onAppear {
             appeared = true
-            startTypewriter()
+            if animated {
+                startTypewriter()
+            } else {
+                visibleCharacters = roast.count
+            }
         }
     }
 
@@ -66,8 +72,11 @@ struct RoastBannerView: View {
 }
 
 #Preview {
-    RoastBannerView(
-        roast: "That one decorative pillow is doing community service for the whole couch."
-    )
-    .padding()
+    ZStack {
+        GradientBackground()
+        RoastBannerView(
+            roast: "That one decorative pillow is doing community service for the whole couch."
+        )
+        .padding()
+    }
 }

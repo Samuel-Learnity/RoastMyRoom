@@ -10,7 +10,9 @@ final class SubscriptionService {
     private(set) var isPremium = false
     #endif
     private(set) var products: [Product] = []
+    private(set) var pointsProducts: [Product] = []
     private(set) var purchaseError: String?
+    private(set) var _pointsBalance: Int = UserDefaults.standard.integer(forKey: "pointsBalance")
 
     private let productIDs: [String] = [
         "roomscore.weekly",
@@ -18,9 +20,26 @@ final class SubscriptionService {
         "roomscore.lifetime"
     ]
 
+    private let pointsProductIDs: [String] = [
+        "roomscore.points.10",
+        "roomscore.points.35",
+        "roomscore.points.75",
+        "roomscore.points.200"
+    ]
+
     private var transactionListener: Task<Void, Never>?
 
+    private static let pointsInitializedKey = "pointsBalanceInitialized"
+
     init() {
+        // Grant 2 free points on first launch
+        if !UserDefaults.standard.bool(forKey: Self.pointsInitializedKey) {
+            UserDefaults.standard.set(true, forKey: Self.pointsInitializedKey)
+            if _pointsBalance == 0 {
+                _pointsBalance = 2
+                UserDefaults.standard.set(2, forKey: Self.pointsBalanceKey)
+            }
+        }
         transactionListener = listenForTransactions()
         Task { await checkSubscriptionStatus() }
     }
@@ -33,8 +52,16 @@ final class SubscriptionService {
 
     func loadProducts() async {
         do {
-            let storeProducts = try await Product.products(for: productIDs)
-            products = storeProducts.sorted { $0.price < $1.price }
+            let allIDs = productIDs + pointsProductIDs
+            let storeProducts = try await Product.products(for: allIDs)
+
+            products = storeProducts
+                .filter { $0.type == .autoRenewable || $0.type == .nonConsumable }
+                .sorted { $0.price < $1.price }
+
+            pointsProducts = storeProducts
+                .filter { $0.type == .consumable }
+                .sorted { $0.price < $1.price }
         } catch {
             purchaseError = error.localizedDescription
         }
@@ -67,6 +94,58 @@ final class SubscriptionService {
             purchaseError = error.localizedDescription
             return false
         }
+    }
+
+    // MARK: - Purchase Points
+
+    func purchasePoints(_ product: Product) async -> Bool {
+        purchaseError = nil
+        do {
+            let result = try await product.purchase()
+
+            switch result {
+            case .success(let verification):
+                let transaction = try checkVerified(verification)
+
+                if let pack = PointsPack.pack(for: transaction.productID) {
+                    addPoints(pack.points)
+                }
+
+                await transaction.finish()
+                return true
+
+            case .userCancelled:
+                return false
+
+            case .pending:
+                return false
+
+            @unknown default:
+                return false
+            }
+        } catch {
+            purchaseError = error.localizedDescription
+            return false
+        }
+    }
+
+    // MARK: - Points Balance
+
+    private static let pointsBalanceKey = "pointsBalance"
+
+    var pointsBalance: Int { _pointsBalance }
+
+    var hasPoints: Bool { _pointsBalance > 0 }
+
+    private func addPoints(_ count: Int) {
+        _pointsBalance += count
+        UserDefaults.standard.set(_pointsBalance, forKey: Self.pointsBalanceKey)
+    }
+
+    func deductPoint() {
+        guard _pointsBalance > 0 else { return }
+        _pointsBalance -= 1
+        UserDefaults.standard.set(_pointsBalance, forKey: Self.pointsBalanceKey)
     }
 
     // MARK: - Restore
@@ -123,17 +202,38 @@ final class SubscriptionService {
 
     var canScan: Bool {
         if isPremium { return true }
+        if hasFreeScansToday { return true }
+        if hasPoints { return true }
+        return false
+    }
 
+    private var hasFreeScansToday: Bool {
         let today = Calendar.current.startOfDay(for: Date())
         let lastDate = UserDefaults.standard.object(forKey: "lastScanDate") as? Date ?? .distantPast
         let lastScanDay = Calendar.current.startOfDay(for: lastDate)
 
-        if today > lastScanDay {
-            return true // New day, reset
-        }
+        if today > lastScanDay { return true }
 
         let count = UserDefaults.standard.integer(forKey: "dailyScanCount")
         return count < 2
+    }
+
+    enum ScanPaymentSource: String, Sendable {
+        case free, premium, points
+    }
+
+    /// Records a scan and returns the payment source used.
+    /// Call AFTER successful API response.
+    func recordScanWithSource() -> ScanPaymentSource {
+        if isPremium { return .premium }
+
+        if hasFreeScansToday {
+            recordScan()
+            return .free
+        }
+
+        deductPoint()
+        return .points
     }
 
     func recordScan() {
@@ -169,6 +269,11 @@ final class SubscriptionService {
     func debugTogglePremium() {
         isPremium.toggle()
     }
+
+    func debugSetPoints(_ count: Int) {
+        _pointsBalance = count
+        UserDefaults.standard.set(count, forKey: Self.pointsBalanceKey)
+    }
     #endif
 
     // MARK: - Private
@@ -177,8 +282,16 @@ final class SubscriptionService {
         Task.detached {
             for await result in Transaction.updates {
                 if let transaction = try? self.checkVerified(result) {
+                    if transaction.productType == .consumable {
+                        if let pack = PointsPack.pack(for: transaction.productID) {
+                            await MainActor.run {
+                                self.addPoints(pack.points)
+                            }
+                        }
+                    } else {
+                        await self.checkSubscriptionStatus()
+                    }
                     await transaction.finish()
-                    await self.checkSubscriptionStatus()
                 }
             }
         }

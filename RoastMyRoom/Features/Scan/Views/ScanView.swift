@@ -94,16 +94,25 @@ struct ScanView: View {
             HStack {
                 // Remaining scans indicator
                 if !subscriptionService.isPremium {
-                    let remaining = subscriptionService.remainingScansToday
-                    Text(String(localized: "scan_remaining \(remaining)"))
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(.black.opacity(0.5), in: Capsule())
-                        .padding(.leading, 20)
-                        .padding(.top, 60)
+                    VStack(alignment: .leading, spacing: 4) {
+                        let remaining = subscriptionService.remainingScansToday
+                        Text(String(localized: "scan_remaining \(remaining)"))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.white)
+
+                        if subscriptionService.pointsBalance > 0 {
+                            Text(String(localized: "scan_points_balance \(subscriptionService.pointsBalance)"))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.rsAccent)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+                    .padding(.leading, 20)
+                    .padding(.top, 60)
                 }
 
                 Spacer()
@@ -224,7 +233,7 @@ private struct ScanFlowView: View {
             AnalysisView(
                 viewModel: AppFactory.shared.makeAnalysisViewModel(image: image),
                 onResult: { result, img in
-                    subscriptionService.recordScan()
+                    _ = subscriptionService.recordScanWithSource()
                     path.append(ScanResultRoute(result: result, image: img))
                 },
                 onDismiss: onDismiss
@@ -236,6 +245,7 @@ private struct ScanFlowView: View {
                         image: route.image,
                         isPremium: subscriptionService.isPremium
                     ),
+                    subscriptionService: subscriptionService,
                     onDismiss: onDismiss
                 )
             }

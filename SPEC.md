@@ -82,7 +82,7 @@ RoomScore/
         ProfileViewModel.swift      — Stats agrégées, subscription status
     Paywall/
       Views/
-        PaywallView.swift           — Sheet : fond photo blurée, 3 plans, CTA, social proof
+        PaywallView.swift           — Sheet : fond photo blurée, 3 plans, CTA
         PlanCardView.swift          — Card prix individuelle
       ViewModels/
         PaywallViewModel.swift      — StoreKit 2 products, purchase, restore
@@ -241,7 +241,6 @@ Scroll vertical, sections empilées :
 - Fond : photo de la pièce, blur 20, overlay sombre 60%
 - Score qui pulse (scale loop) + "Débloquez l'analyse complète"
 - 3 bullets animés checkmark : sous-scores, tips personnalisés, historique illimité
-- Social proof : "247K+ pièces scannées"
 - 3 plans :
 
 | Plan | Product ID | Prix | Trial | Note |
@@ -318,7 +317,8 @@ La Edge Function applique des garde-fous après la réponse IA :
     { "text": "Pick a two-color palette and ditch the clashing pillows", "impact": 0.6 },
     { "text": "Hide cables with an adhesive raceway behind the desk", "impact": 0.4 }
   ],
-  "roast": "That one decorative pillow is doing community service for the whole couch."
+  "roast": "That one decorative pillow is doing community service for the whole couch.",
+  "verdict": "Bof bof"
 }
 ```
 
@@ -352,6 +352,7 @@ class RoomScan {
     var subScores: SubScoresData     // Codable struct → JSON
     var tips: [TipData]              // Codable array → JSON
     var roast: String
+    var verdict: String             // 1-3 mots, réaction courte proportionnelle au score
     var createdAt: Date
     var isPremiumResult: Bool
 }
@@ -372,6 +373,8 @@ class RoomScan {
 | `dailyScanCount` | Int | Scans du jour |
 | `lastScanDate` | Date | Reset quotidien |
 | `preferredAppearance` | String | system / light / dark |
+| `pointsBalance` | Int | Solde de points consommables |
+| `pointsBalanceInitialized` | Bool | 2 pts offerts au 1er lancement |
 
 ---
 
@@ -401,6 +404,40 @@ class RoomScan {
 | Tips | 1 visible | 3 personnalisés |
 | Historique | 3 derniers | Illimité |
 | Share card | Avec watermark | Sans watermark |
+
+### Système de Points (Consumable)
+
+Points = monnaie consommable pour débloquer des fonctions sans abonnement.
+
+**Attribution initiale** : 2 points offerts à la première ouverture de l'app.
+
+**Utilisation** :
+- **1 point = 1 scan supplémentaire** au-delà du quota gratuit (2/jour). Priorité : premium → free daily → points.
+- **1 point = 1 déblocage du contenu complet** d'un scan existant (sous-scores, radar, 3 tips). Persiste via `isPremiumResult = true` sur `RoomScan` (SwiftData).
+
+**Packs disponibles** (Consumable, App Store Connect) :
+
+| Pack | Product ID | Prix | Points | Badge |
+|------|-----------|------|--------|-------|
+| Small | `roomscore.points.10` | 0.99€ | 10 | — |
+| Medium | `roomscore.points.35` | 2.99€ | 35 | — |
+| Large | `roomscore.points.75` | 4.99€ | 75 | Best Value |
+| XL | `roomscore.points.200` | 9.99€ | 200 | — |
+
+**Persistence** : `UserDefaults` (`pointsBalance`). Les consumables ne sont pas restaurables (mentionné en fine print paywall).
+
+**Paywall redesigné** :
+- Tab picker : "Acheter des points" (défaut) | "Passer illimité" (abonnements)
+- Tab points : solde actuel + grille 2×2 de packs
+- Tab abonnements : 3 plans existants (inchangé)
+- CTA dynamique selon le tab sélectionné
+
+**Déblocage dans ResultView** :
+- Bouton principal : ouvre paywall (abonnement)
+- Bouton secondaire : "Débloquer (1 pt)" si points dispo, sinon ouvre paywall tab points
+
+**Achat depuis Profile** :
+- Section "Points" avec solde actuel + bouton "Acheter des points" → paywall tab points
 
 ---
 

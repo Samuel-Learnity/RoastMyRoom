@@ -7,28 +7,27 @@ struct PlanCardView: View {
     let isBestValue: Bool
 
     var body: some View {
-        VStack(spacing: 8) {
-            if isBestValue {
-                Text(String(localized: "paywall_best_value"))
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(Color.rsAccent, in: Capsule())
-            }
+        VStack(spacing: 4) {
+            // Badge — always reserves space, invisible when not best value
+            Text(String(localized: "paywall_best_value"))
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.rsAccent, in: Capsule())
+                .opacity(isBestValue ? 1 : 0)
 
             VStack(spacing: 4) {
                 Text(product.displayName)
                     .font(.headline)
+                    .foregroundStyle(.white)
 
                 Text(product.displayPrice)
                     .font(.title2)
                     .fontWeight(.bold)
+                    .foregroundStyle(.white)
 
                 if let subscription = product.subscription {
-                    Text(periodLabel(subscription.subscriptionPeriod))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
 
                     if let intro = subscription.introductoryOffer,
                        intro.paymentMode == .freeTrial {
@@ -41,28 +40,22 @@ struct PlanCardView: View {
             }
             .padding(.vertical, 16)
             .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color.rsAccent.opacity(0.1) : Color(.secondarySystemGroupedBackground))
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(isSelected ? Color.rsAccent.opacity(0.15) : Color.white.opacity(0.08))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(isSelected ? Color.rsAccent : .clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(isSelected ? Color.rsAccent : Color.rsCardStroke, lineWidth: isSelected ? 2 : 1)
             )
             .scaleEffect(isSelected ? 1.05 : 1.0)
             .animation(.spring(duration: 0.3), value: isSelected)
+            
+            Spacer()
         }
     }
 
-    private func periodLabel(_ period: Product.SubscriptionPeriod) -> String {
-        switch period.unit {
-        case .week: return String(localized: "paywall_per_week")
-        case .month: return String(localized: "paywall_per_month")
-        case .year: return String(localized: "paywall_per_year")
-        default: return ""
-        }
-    }
 
     private func trialLabel(_ period: Product.SubscriptionPeriod) -> String {
         let days = period.value * (period.unit == .week ? 7 : period.unit == .day ? 1 : 30)

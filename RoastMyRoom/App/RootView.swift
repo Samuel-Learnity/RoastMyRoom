@@ -65,6 +65,7 @@ struct MainTabView: View {
             Tab(String(localized: "history_tab"), systemImage: "clock.arrow.circlepath", value: 1) {
                 HistoryView(
                     isPremium: subscriptionService.isPremium,
+                    subscriptionService: subscriptionService,
                     onShowPaywall: { showScanLimitPaywall = true }
                 )
             }

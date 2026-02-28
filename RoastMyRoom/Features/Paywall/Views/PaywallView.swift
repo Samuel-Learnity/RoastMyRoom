@@ -19,7 +19,6 @@ struct PaywallView: View {
 
                     headerSection
                     bulletsSection
-                    socialProofSection
                     plansSection
                     ctaButton
                     finePrint
@@ -40,14 +39,20 @@ struct PaywallView: View {
     private var backgroundLayer: some View {
         ZStack {
             if let image = backgroundImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
-                    .blur(radius: 20)
-            }
-            Color.black.opacity(0.6)
+                GeometryReader { geo in
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geo.size.width, height: geo.size.height)
+                        .clipped()
+                        .blur(radius: 20)
+                }
                 .ignoresSafeArea()
+                Color.black.opacity(0.6)
+                    .ignoresSafeArea()
+            } else {
+                GradientBackground()
+            }
         }
     }
 
@@ -103,43 +108,134 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Social Proof
-
-    private var socialProofSection: some View {
-        Text(String(localized: "paywall_social_proof"))
-            .font(.subheadline)
-            .foregroundStyle(.white.opacity(0.7))
-    }
-
     // MARK: - Plans
 
     private var plansSection: some View {
+        VStack(spacing: 16) {
+            tabPicker
+
+            switch viewModel.selectedTab {
+            case .points:
+                pointsContent
+            case .subscription:
+                subscriptionContent
+            }
+        }
+    }
+
+    // MARK: - Tab Picker
+
+    private var tabPicker: some View {
+        HStack(spacing: 0) {
+            ForEach(PaywallViewModel.PaywallTab.allCases, id: \.self) { tab in
+                Button {
+                    withAnimation(.spring(duration: 0.3)) {
+                        viewModel.selectedTab = tab
+                    }
+                } label: {
+                    Text(tab == .points
+                        ? String(localized: "paywall_tab_points")
+                        : String(localized: "paywall_tab_unlimited"))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(viewModel.selectedTab == tab ? .white : .white.opacity(0.5))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            viewModel.selectedTab == tab
+                                ? Color.rsAccent.opacity(0.2)
+                                : Color.clear,
+                            in: Capsule()
+                        )
+                }
+            }
+        }
+        .padding(4)
+        .glassBackground(cornerRadius: 24)
+    }
+
+    // MARK: - Points Content
+
+    private var pointsContent: some View {
+        VStack(spacing: 12) {
+            // Balance indicator
+            HStack(spacing: 6) {
+                Image(systemName: "star.circle.fill")
+                    .foregroundStyle(Color.rsAccent)
+                Text(String(localized: "paywall_balance \(viewModel.pointsBalance)"))
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.7))
+            }
+
+            // 2×2 grid
+            LazyVGrid(
+                columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+                spacing: 12
+            ) {
+                if viewModel.pointsProducts.isEmpty {
+                    // Skeleton placeholders
+                    ForEach(0..<4, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white.opacity(0.06))
+                            .aspectRatio(1, contentMode: .fit)
+                            .shimmer(isActive: true)
+                    }
+                } else {
+                    ForEach(PointsPack.all) { pack in
+                        if let product = viewModel.pointsProducts.first(where: { $0.id == pack.id }) {
+                            PointsPackCardView(
+                                product: product,
+                                pack: pack,
+                                isSelected: viewModel.selectedPointsPackID == pack.id
+                            )
+                            .onTapGesture { viewModel.selectedPointsPackID = pack.id }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Subscription Content
+
+    private var subscriptionContent: some View {
         HStack(spacing: 12) {
-            if let weekly = viewModel.weeklyProduct {
-                PlanCardView(
-                    product: weekly,
-                    isSelected: viewModel.selectedProductID == weekly.id,
-                    isBestValue: false
-                )
-                .onTapGesture { viewModel.selectedProductID = weekly.id }
-            }
+            if viewModel.products.isEmpty {
+                // Skeleton placeholders
+                ForEach(0..<3, id: \.self) { _ in
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.white.opacity(0.06))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 160)
+                        .shimmer(isActive: true)
+                }
+            } else {
+                if let weekly = viewModel.weeklyProduct {
+                    PlanCardView(
+                        product: weekly,
+                        isSelected: viewModel.selectedProductID == weekly.id,
+                        isBestValue: false
+                    )
+                    .onTapGesture { viewModel.selectedProductID = weekly.id }
+                }
 
-            if let annual = viewModel.annualProduct {
-                PlanCardView(
-                    product: annual,
-                    isSelected: viewModel.selectedProductID == annual.id,
-                    isBestValue: true
-                )
-                .onTapGesture { viewModel.selectedProductID = annual.id }
-            }
+                if let annual = viewModel.annualProduct {
+                    PlanCardView(
+                        product: annual,
+                        isSelected: viewModel.selectedProductID == annual.id,
+                        isBestValue: true
+                    )
+                    .onTapGesture { viewModel.selectedProductID = annual.id }
+                }
 
-            if let lifetime = viewModel.lifetimeProduct {
-                PlanCardView(
-                    product: lifetime,
-                    isSelected: viewModel.selectedProductID == lifetime.id,
-                    isBestValue: false
-                )
-                .onTapGesture { viewModel.selectedProductID = lifetime.id }
+                if let lifetime = viewModel.lifetimeProduct {
+                    PlanCardView(
+                        product: lifetime,
+                        isSelected: viewModel.selectedProductID == lifetime.id,
+                        isBestValue: false
+                    )
+                    .onTapGesture { viewModel.selectedProductID = lifetime.id }
+                }
             }
         }
     }
@@ -164,18 +260,10 @@ struct PaywallView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 18)
-            .background(
-                LinearGradient(
-                    colors: [Color.rsAccent, Color.purple],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ),
-                in: RoundedRectangle(cornerRadius: 16)
-            )
             .foregroundStyle(.white)
         }
-        .neonGlow(colors: [.purple, Color.rsAccent, .pink], radius: 20, opacity: 0.6)
-        .disabled(viewModel.isPurchasing || viewModel.selectedProduct == nil)
+        .aiGlow(colors: [.purple, Color.rsAccent, .cyan, .pink], cornerRadius: 16, glowRadius: 14, glowOpacity: 0.8)
+        .disabled(viewModel.isPurchasing || (viewModel.selectedTab == .subscription && viewModel.selectedProduct == nil) || (viewModel.selectedTab == .points && viewModel.selectedPointsProduct == nil))
 
         // Error display
         .overlay(alignment: .bottom) {
@@ -193,9 +281,15 @@ struct PaywallView: View {
 
     private var finePrint: some View {
         VStack(spacing: 8) {
-            Text(String(localized: "paywall_cancel_anytime"))
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.5))
+            if viewModel.selectedTab == .points {
+                Text(String(localized: "paywall_points_non_restorable"))
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.4))
+            } else {
+                Text(String(localized: "paywall_cancel_anytime"))
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.5))
+            }
 
             HStack(spacing: 16) {
                 Button(String(localized: "paywall_terms")) {}
@@ -206,11 +300,13 @@ struct PaywallView: View {
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.4))
 
-                Button(String(localized: "paywall_restore")) {
-                    Task { await viewModel.restore() }
+                if viewModel.selectedTab == .subscription {
+                    Button(String(localized: "paywall_restore")) {
+                        Task { await viewModel.restore() }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.4))
                 }
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.4))
             }
         }
     }

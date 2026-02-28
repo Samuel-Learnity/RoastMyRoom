@@ -13,6 +13,7 @@ final class AnalysisViewModel {
 
     private(set) var state: State = .analyzing
     private(set) var currentStepIndex = 0
+    private(set) var analysisPercent: Int = 0
     private var hasStartedAnalysis = false
 
     let image: UIImage
@@ -20,10 +21,10 @@ final class AnalysisViewModel {
     private let storageService: StorageServiceProtocol
 
     let steps: [String] = [
-        String(localized: "analysis_step_colors"),
-        String(localized: "analysis_step_style"),
-        String(localized: "analysis_step_layout"),
-        String(localized: "analysis_step_score")
+        String(localized: "analysis_step_neural"),
+        String(localized: "analysis_step_deep"),
+        String(localized: "analysis_step_spatial"),
+        String(localized: "analysis_step_scoring")
     ]
 
     init(image: UIImage, scoringService: ScoringServiceProtocol, storageService: StorageServiceProtocol) {
@@ -38,13 +39,27 @@ final class AnalysisViewModel {
 
         let startTime = ContinuousClock.now
 
-        // Start step rotation
+        // Escalating haptic styles per step (Anticipation bias)
+        let hapticStyles: [UIImpactFeedbackGenerator.FeedbackStyle] = [
+            .medium, .rigid, .heavy
+        ]
+
+        // Start step rotation with escalating haptics
         let stepTask = Task {
             for index in 1..<steps.count {
                 try await Task.sleep(for: .milliseconds(800))
                 currentStepIndex = index
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
+                UIImpactFeedbackGenerator(style: hapticStyles[index - 1]).impactOccurred()
+            }
+        }
+
+        // Goal Gradient: percentage accelerates toward the end
+        let percentTask = Task {
+            for i in 1...95 {
+                let progress = Double(i) / 95.0
+                let delay = 26.0 - (progress * 8.0) // 26ms early → 18ms late
+                try await Task.sleep(for: .milliseconds(Int(delay)))
+                analysisPercent = i
             }
         }
 
@@ -60,6 +75,13 @@ final class AnalysisViewModel {
             }
 
             stepTask.cancel()
+            percentTask.cancel()
+            analysisPercent = 100
+
+            // Peak-End Rule: spectacular completion haptic burst
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            try? await Task.sleep(for: .milliseconds(100))
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
             // Auto-save to SwiftData (compress off main thread)
             let capturedImage = image
@@ -74,9 +96,8 @@ final class AnalysisViewModel {
             state = .success(result)
         } catch {
             stepTask.cancel()
-            print("[AnalysisVM] ❌ Analysis failed: \(error)")
-            print("[AnalysisVM] Error type: \(type(of: error))")
-            print("[AnalysisVM] Localized: \(error.localizedDescription)")
+            percentTask.cancel()
+            print("[AnalysisVM] Analysis failed: \(error)")
             state = .error(error.localizedDescription)
         }
     }

@@ -6,6 +6,7 @@ struct HistoryView: View {
     @State private var viewModel: HistoryViewModel?
     @Namespace private var heroNamespace
     let isPremium: Bool
+    let subscriptionService: SubscriptionService
     var onShowPaywall: (() -> Void)?
 
     private let columns = [
@@ -15,27 +16,33 @@ struct HistoryView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if let vm = viewModel {
-                    if vm.isLoading {
-                        skeletonGrid
-                    } else if vm.isEmpty {
-                        emptyState
+            ZStack {
+                GradientBackground()
+
+                Group {
+                    if let vm = viewModel {
+                        if vm.isEmpty {
+                            emptyState
+                        } else {
+                            scrollContent(vm: vm)
+                        }
                     } else {
-                        scrollContent(vm: vm)
+                        emptyState
                     }
-                } else {
-                    skeletonGrid
                 }
             }
             .navigationTitle(String(localized: "history_title"))
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .navigationDestination(for: RoomScan.self) { scan in
                 ResultView(
                     viewModel: AppFactory.shared.makeResultViewModel(
                         scanResult: ScanResult(from: scan),
                         image: UIImage(data: scan.imageData) ?? UIImage(),
-                        isPremium: isPremium
-                    )
+                        isPremium: isPremium || scan.isPremiumResult,
+                        animateEntrance: false
+                    ),
+                    subscriptionService: subscriptionService,
+                    scan: scan
                 )
                 .navigationTransition(.zoom(sourceID: scan.id, in: heroNamespace))
             }
@@ -68,15 +75,16 @@ struct HistoryView: View {
         VStack(spacing: 24) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.5))
 
             Text(String(localized: "history_empty_title"))
                 .font(.title3)
                 .fontWeight(.semibold)
+                .foregroundStyle(.white)
 
             Text(String(localized: "history_empty_subtitle"))
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.6))
         }
     }
 
@@ -114,7 +122,7 @@ struct HistoryView: View {
             VStack(alignment: .leading, spacing: 20) {
                 // Fake section header
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.secondary.opacity(0.15))
+                    .fill(Color.white.opacity(0.1))
                     .frame(width: 120, height: 16)
 
                 LazyVGrid(columns: columns, spacing: 12) {
@@ -133,7 +141,7 @@ struct HistoryView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(.headline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.7))
 
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(Array(scans.enumerated()), id: \.element.id) { index, scan in
@@ -168,13 +176,13 @@ struct HistoryView: View {
 private struct HistorySkeletonCard: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.secondary.opacity(0.15))
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.08))
                 .aspectRatio(4/3, contentMode: .fill)
 
             // Fake score badge
             RoundedRectangle(cornerRadius: 6)
-                .fill(Color.secondary.opacity(0.2))
+                .fill(Color.white.opacity(0.12))
                 .frame(width: 44, height: 28)
                 .padding(12)
         }
@@ -183,6 +191,6 @@ private struct HistorySkeletonCard: View {
 }
 
 #Preview {
-    HistoryView(isPremium: false)
+    HistoryView(isPremium: false, subscriptionService: SubscriptionService())
         .modelContainer(for: RoomScan.self, inMemory: true)
 }

@@ -6,6 +6,7 @@ nonisolated final class ShareCardRenderer: Sendable {
         score: Float,
         style: String,
         roast: String,
+        verdict: String,
         isPremium: Bool,
         size: CGSize = CGSize(width: 1080, height: 1920)
     ) -> UIImage {
@@ -26,8 +27,11 @@ nonisolated final class ShareCardRenderer: Sendable {
             // 4. "/10" label below score
             let scoreBottomY = drawScoreSubtitle(in: rect)
 
+            // 4b. Verdict label below "/10"
+            let verdictBottomY = drawVerdict(verdict, below: scoreBottomY, color: scoreColor(for: score), in: rect)
+
             // 5. Style badge capsule
-            drawStyleBadge(style, below: scoreBottomY, in: rect)
+            drawStyleBadge(style, below: verdictBottomY, in: rect)
 
             // 6. Roast quote (centered, lower area)
             drawRoast(roast, in: rect)
@@ -49,7 +53,7 @@ nonisolated final class ShareCardRenderer: Sendable {
         case 0..<4:  return UIColor(red: 1.0, green: 0.27, blue: 0.23, alpha: 1.0) // #FF453A
         case 4..<6:  return UIColor(red: 1.0, green: 0.62, blue: 0.04, alpha: 1.0) // #FF9F0A
         case 6..<8:  return UIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1.0) // #30D158
-        default:     return UIColor(red: 0.37, green: 0.36, blue: 0.90, alpha: 1.0) // #5E5CE6
+        default:     return UIColor(red: 0.737, green: 0.510, blue: 0.953, alpha: 1.0) // #BC82F3
         }
     }
 
@@ -162,6 +166,19 @@ nonisolated final class ShareCardRenderer: Sendable {
         let point = CGPoint(x: (rect.width - subSize.width) / 2, y: y)
         ("/10" as NSString).draw(at: point, withAttributes: subAttrs)
         return y + subSize.height
+    }
+
+    @discardableResult
+    private func drawVerdict(_ verdict: String, below y: CGFloat, color: UIColor, in rect: CGRect) -> CGFloat {
+        guard !verdict.isEmpty else { return y }
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: UIFont.systemFont(ofSize: 36, weight: .heavy, width: .condensed),
+            .foregroundColor: color
+        ]
+        let size = (verdict.uppercased() as NSString).size(withAttributes: attrs)
+        let point = CGPoint(x: (rect.width - size.width) / 2, y: y + 8)
+        (verdict.uppercased() as NSString).draw(at: point, withAttributes: attrs)
+        return y + 8 + size.height
     }
 
     private func drawStyleBadge(_ style: String, below scoreBottomY: CGFloat, in rect: CGRect) {

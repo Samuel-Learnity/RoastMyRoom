@@ -7,6 +7,7 @@ nonisolated struct ScanResult: Codable, Equatable, Sendable {
     let subScores: SubScores
     let tips: [Tip]
     let roast: String
+    let verdict: String
 
     enum CodingKeys: String, CodingKey {
         case roomType = "room_type"
@@ -15,6 +16,28 @@ nonisolated struct ScanResult: Codable, Equatable, Sendable {
         case subScores = "sub_scores"
         case tips
         case roast
+        case verdict
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        roomType = try container.decode(String.self, forKey: .roomType)
+        overallScore = try container.decode(Float.self, forKey: .overallScore)
+        style = try container.decode(String.self, forKey: .style)
+        subScores = try container.decode(SubScores.self, forKey: .subScores)
+        tips = try container.decode([Tip].self, forKey: .tips)
+        roast = try container.decode(String.self, forKey: .roast)
+        verdict = try container.decodeIfPresent(String.self, forKey: .verdict) ?? ""
+    }
+
+    init(roomType: String, overallScore: Float, style: String, subScores: SubScores, tips: [Tip], roast: String, verdict: String = "") {
+        self.roomType = roomType
+        self.overallScore = overallScore
+        self.style = style
+        self.subScores = subScores
+        self.tips = tips
+        self.roast = roast
+        self.verdict = verdict
     }
 }
 
@@ -29,7 +52,8 @@ extension ScanResult {
                 colorHarmony: 0, proportions: 0, lighting: 0, cleanliness: 0, personality: 0
             ),
             tips: scan.tips,
-            roast: scan.roast
+            roast: scan.roast,
+            verdict: scan.verdict
         )
     }
 
@@ -49,6 +73,7 @@ extension ScanResult {
             Tip(text: "Pick a two-color palette and ditch the clashing throw pillows", impact: 0.6),
             Tip(text: "Hide cables with an adhesive raceway behind the desk", impact: 0.4)
         ],
-        roast: "That one decorative pillow is doing community service for the whole couch."
+        roast: "That one decorative pillow is doing community service for the whole couch.",
+        verdict: "Bof bof"
     )
 }

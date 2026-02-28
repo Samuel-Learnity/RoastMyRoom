@@ -52,8 +52,8 @@ final class AppFactory {
         )
     }
 
-    func makeResultViewModel(scanResult: ScanResult, image: UIImage, isPremium: Bool) -> ResultViewModel {
-        ResultViewModel(scanResult: scanResult, image: image, isPremium: isPremium)
+    func makeResultViewModel(scanResult: ScanResult, image: UIImage, isPremium: Bool, animateEntrance: Bool = true) -> ResultViewModel {
+        ResultViewModel(scanResult: scanResult, image: image, isPremium: isPremium, animateEntrance: animateEntrance)
     }
 
     func makeHistoryViewModel(modelContext: ModelContext) -> HistoryViewModel {
@@ -71,7 +71,7 @@ final class AppFactory {
         )
     }
 
-    func makePaywallViewModel() -> PaywallViewModel {
-        PaywallViewModel(subscriptionService: subscriptionService)
+    func makePaywallViewModel(initialTab: PaywallViewModel.PaywallTab = .points) -> PaywallViewModel {
+        PaywallViewModel(subscriptionService: subscriptionService, initialTab: initialTab)
     }
 }

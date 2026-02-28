@@ -3,17 +3,24 @@ import SwiftUI
 struct ResultView: View {
     @Environment(\.dismiss) private var dismiss
     @State var viewModel: ResultViewModel
+    let subscriptionService: SubscriptionService
+    var scan: RoomScan?
     var onDismiss: (() -> Void)?
     @State private var showPaywall = false
+    @State private var paywallInitialTab: PaywallViewModel.PaywallTab = .points
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                heroSection
-                contentSections
+        ZStack {
+            GradientBackground()
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    heroSection
+                    contentSections
+                }
             }
+            .scrollIndicators(.hidden)
         }
-        .scrollIndicators(.hidden)
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -41,6 +48,7 @@ struct ResultView: View {
         }
         .ignoresSafeArea(edges: .top)
         .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         .sheet(isPresented: $viewModel.showShareSheet) {
             if let shareImage = viewModel.shareImage {
                 ShareSheet(items: [shareImage, viewModel.shareText])
@@ -48,7 +56,7 @@ struct ResultView: View {
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView(
-                viewModel: AppFactory.shared.makePaywallViewModel(),
+                viewModel: AppFactory.shared.makePaywallViewModel(initialTab: paywallInitialTab),
                 backgroundImage: viewModel.image,
                 score: viewModel.scanResult.overallScore
             )
@@ -69,11 +77,11 @@ struct ResultView: View {
                 }
                 .clipped()
 
-            // Gradient fade to content at bottom
+            // Gradient fade to gradient background
             LinearGradient(
                 stops: [
-                    .init(color: .clear, location: 0.4),
-                    .init(color: .black.opacity(0.9), location: 1.0)
+                    .init(color: .clear, location: 0.3),
+                    .init(color: Color.rsBgBase, location: 1.0)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -81,7 +89,7 @@ struct ResultView: View {
 
             // Score + badge overlaid at bottom
             VStack(spacing: 16) {
-                ScoreCounterView(score: viewModel.scanResult.overallScore)
+                ScoreCounterView(score: viewModel.scanResult.overallScore, verdict: viewModel.scanResult.verdict, animated: viewModel.animateEntrance)
                 StyleBadgeView(styleName: viewModel.scanResult.style)
             }
             .padding(.bottom, 32)
@@ -114,13 +122,13 @@ struct ResultView: View {
 
             Spacer().frame(height: 24)
         }
-        .background(Color(.systemBackground))
+        .background(Color.clear)
     }
 
     // MARK: - Roast
 
     private var roastSection: some View {
-        RoastBannerView(roast: viewModel.scanResult.roast)
+        RoastBannerView(roast: viewModel.scanResult.roast, animated: viewModel.animateEntrance)
             .padding(.horizontal, 16)
     }
 
@@ -128,19 +136,22 @@ struct ResultView: View {
 
     private var premiumContent: some View {
         VStack(spacing: 20) {
-            if !viewModel.isPremium {
-                blurWall
-            }
-
-            // Section header
+            // Section header — always visible
             sectionHeader(
                 title: String(localized: "result_breakdown_title"),
                 icon: "chart.dots.scatter"
             )
 
+            // Overall score summary — always visible (even free users)
+            overallScoreSummary
+
+            if !viewModel.isPremium {
+                blurWall
+            }
+
             // Radar chart
             if let subScores = viewModel.scanResult.subScores as SubScores? {
-                RadarChartView(subScores: subScores)
+                RadarChartView(subScores: subScores, animated: viewModel.animateEntrance)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 4)
                     .padding(.bottom, 24)
@@ -159,12 +170,40 @@ struct ResultView: View {
                     TipCardView(
                         tip: tip,
                         index: index,
-                        isBlurred: !viewModel.isPremium && index > 0
+                        isBlurred: !viewModel.isPremium && index > 0,
+                        animated: viewModel.animateEntrance
                     )
                 }
             }
             .padding(.horizontal, 16)
         }
+    }
+
+    // MARK: - Overall Score Summary
+
+    private var overallScoreSummary: some View {
+        HStack(spacing: 12) {
+            Text(String(format: "%.1f", viewModel.scanResult.overallScore))
+                .font(.system(size: 36, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.scoreColor(for: viewModel.scanResult.overallScore))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(String(localized: "result_overall_score"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+
+                Text("/10")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .glassBackground()
+        .padding(.horizontal, 16)
     }
 
     // MARK: - Section Header
@@ -178,10 +217,10 @@ struct ResultView: View {
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.7))
 
             Rectangle()
-                .fill(Color.secondary.opacity(0.2))
+                .fill(Color.white.opacity(0.15))
                 .frame(height: 1)
         }
         .padding(.horizontal, 16)
@@ -190,28 +229,59 @@ struct ResultView: View {
     // MARK: - Blur Wall
 
     private var blurWall: some View {
-        Button {
-            showPaywall = true
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "lock.fill")
-                    .font(.subheadline)
+        VStack(spacing: 10) {
+            // Primary: open paywall (subscription)
+            Button {
+                paywallInitialTab = .subscription
+                showPaywall = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "lock.fill")
+                        .font(.subheadline)
 
-                Text(String(localized: "result_unlock"))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    Text(String(localized: "result_unlock"))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
+                .foregroundStyle(.white)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .aiGlow(colors: [Color.rsAccent, .purple, .cyan, .pink], cornerRadius: 12, glowRadius: 10, glowOpacity: 0.7)
             }
-            .foregroundStyle(Color.rsAccent)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity)
-            .background(Color.rsAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.rsAccent.opacity(0.2), lineWidth: 1)
-            )
-            .neonGlow(colors: [Color.rsAccent, .purple, .pink], radius: 14, opacity: 0.4)
-            .padding(.horizontal, 16)
+
+            // Secondary: unlock with 1 point
+            Button {
+                if subscriptionService.hasPoints {
+                    viewModel.unlockWithPoint(subscriptionService: subscriptionService, scan: scan)
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                } else {
+                    paywallInitialTab = .points
+                    showPaywall = true
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "star.circle.fill")
+                        .font(.subheadline)
+
+                    if subscriptionService.hasPoints {
+                        Text(String(localized: "result_unlock_point"))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text("(\(subscriptionService.pointsBalance) pts)")
+                            .font(.caption)
+                    } else {
+                        Text(String(localized: "result_unlock_point_none"))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                }
+                .foregroundStyle(.white.opacity(0.7))
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+            }
         }
+        .padding(.horizontal, 16)
     }
 }
 
@@ -241,6 +311,7 @@ private struct ShareSheet: UIViewControllerRepresentable {
                 scanResult: .mock,
                 image: UIImage(systemName: "photo.artframe")!
             ),
+            subscriptionService: SubscriptionService(),
             onDismiss: { }
         )
     }

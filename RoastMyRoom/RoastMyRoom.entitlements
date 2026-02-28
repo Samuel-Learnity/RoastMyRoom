@@ -2,12 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>ImageName</key>
-		<string>LaunchIcon</string>
-		<key>BackgroundColor</key>
-		<string>AccentColor</string>
-	</dict>
+	<key>com.apple.developer.in-app-payments</key>
+	<array>
+		<string>merchant.com.disco.RoastMyRoom</string>
+	</array>
 </dict>
 </plist>

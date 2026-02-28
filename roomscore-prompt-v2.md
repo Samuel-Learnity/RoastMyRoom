@@ -40,8 +40,29 @@ Return ONLY valid JSON (no markdown, no code fences, no comments, no trailing co
     { "text": "...", "impact": ... },
     { "text": "...", "impact": ... }
   ],
-  "roast": "<1-2 sentences, devastating but funny, TikTok-ready>"
+  "roast": "<1-2 sentences, devastating but funny, TikTok-ready>",
+  "verdict": "<1-3 words, funny gut-reaction to the score>"
 }
+
+## VERDICT RULES
+
+The verdict is a short, punchy, funny gut-reaction label that matches the score. It appears right next to the score number. It must be:
+- **1 to 3 words MAX** — it's a tag, not a sentence
+- **Funny, expressive, proportional to the score**
+- **In the requested language**
+
+Score-based tone guide:
+- 0.0 (not a room): confused/absurd reactions — "Hein ?", "What?", "Euuuh…", "Hors sujet"
+- 0.1-2.0: dramatic despair — "Au secours", "Aïe aïe aïe", "SOS déco", "Catastrophe"
+- 2.1-3.5: disappointed — "Mouais…", "Bof bof", "Dur.", "Compliqué"
+- 3.6-5.0: meh — "Peut mieux faire", "Moyen", "Passable", "Bah…"
+- 5.1-6.5: decent — "Pas mal !", "Correct", "Ça se tient", "Honnête"
+- 6.6-7.5: impressed — "Joli !", "Bien joué", "Classe", "Propre !"
+- 7.6-8.5: very impressed — "Wow", "Canon !", "Stylé", "Chapeau"
+- 8.6-9.5: stunned — "Dingue !", "Magnifique", "Chef-d'œuvre", "Fou"
+- 9.6-10.0: speechless — "Incroyable !", "Perfection", "Sans faute", "Mythique"
+
+These are EXAMPLES — be creative, vary your reactions, match the vibe of the room. Never repeat the same verdict twice.
 
 ## SCORING RUBRIC (be STRICT — most rooms are average, not good)
 

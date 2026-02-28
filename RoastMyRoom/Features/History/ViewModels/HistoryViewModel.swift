@@ -6,7 +6,7 @@ import Observation
 @Observable
 final class HistoryViewModel {
     private(set) var scans: [RoomScan] = []
-    private(set) var isLoading = true
+    private(set) var isLoading = false
     var scanToDelete: RoomScan?
     var showDeleteConfirmation = false
 

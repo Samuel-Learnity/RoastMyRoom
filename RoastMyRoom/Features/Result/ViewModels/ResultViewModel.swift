@@ -6,15 +6,25 @@ import Observation
 final class ResultViewModel {
     let scanResult: ScanResult
     let image: UIImage
-    let isPremium: Bool
+    private(set) var isPremium: Bool
+    let animateEntrance: Bool
 
     var showShareSheet = false
     var shareImage: UIImage?
 
-    init(scanResult: ScanResult, image: UIImage, isPremium: Bool = false) {
+    init(scanResult: ScanResult, image: UIImage, isPremium: Bool = false, animateEntrance: Bool = true) {
         self.scanResult = scanResult
         self.image = image
         self.isPremium = isPremium
+        self.animateEntrance = animateEntrance
+    }
+
+    /// Unlock full content for this scan using 1 point.
+    func unlockWithPoint(subscriptionService: SubscriptionService, scan: RoomScan?) {
+        guard subscriptionService.hasPoints else { return }
+        subscriptionService.deductPoint()
+        isPremium = true
+        scan?.isPremiumResult = true
     }
 
     func generateShareCard() {
@@ -29,6 +39,7 @@ final class ResultViewModel {
                     score: result.overallScore,
                     style: result.style,
                     roast: result.roast,
+                    verdict: result.verdict,
                     isPremium: premium
                 )
             }.value

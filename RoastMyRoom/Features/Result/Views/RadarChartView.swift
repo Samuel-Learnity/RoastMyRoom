@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RadarChartView: View {
     let subScores: SubScores
+    var animated: Bool = true
     @State private var progress: CGFloat = 0
     @State private var labelsVisible = false
 
@@ -39,11 +40,18 @@ struct RadarChartView: View {
             labelViews
         }
         .frame(width: 220, height: 220)
+        .padding(40)
+        .padding(.top, 20)
         .onAppear {
-            withAnimation(.easeOut(duration: 1.0).delay(0.3)) {
+            if animated {
+                withAnimation(.easeOut(duration: 1.0).delay(0.3)) {
+                    progress = 1
+                }
+                withAnimation(.easeOut(duration: 0.5).delay(1.0)) {
+                    labelsVisible = true
+                }
+            } else {
                 progress = 1
-            }
-            withAnimation(.easeOut(duration: 0.5).delay(1.0)) {
                 labelsVisible = true
             }
         }
@@ -54,7 +62,7 @@ struct RadarChartView: View {
     private var gridLines: some View {
         ForEach([0.25, 0.5, 0.75, 1.0], id: \.self) { scale in
             RadarShape(values: Array(repeating: Float(scale * 10), count: 5))
-                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
         }
     }
 
@@ -67,7 +75,7 @@ struct RadarChartView: View {
                 path.move(to: CGPoint(x: 0, y: 0))
                 path.addLine(to: pointFor(angle: angle, radius: 1.0))
             }
-            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+            .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
             .offset(x: 110, y: 110)
         }
     }
@@ -121,7 +129,7 @@ struct RadarChartView: View {
 
                 Text(labels[index])
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.6))
 
                 Text(String(format: "%.1f", values[index]))
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -181,7 +189,7 @@ private struct RadarShape: Shape {
 
 #Preview {
     ZStack {
-        Color.black.opacity(0.9)
+        GradientBackground()
         RadarChartView(
             subScores: SubScores(
                 colorHarmony: 5.5,

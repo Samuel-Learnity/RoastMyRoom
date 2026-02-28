@@ -11,6 +11,7 @@ final class RoomScan {
     var subScoresData: Data
     var tipsData: Data
     var roast: String
+    var verdict: String = ""
     var createdAt: Date
     var isPremiumResult: Bool
 
@@ -23,6 +24,7 @@ final class RoomScan {
         subScoresData: Data,
         tipsData: Data,
         roast: String,
+        verdict: String = "",
         createdAt: Date = Date(),
         isPremiumResult: Bool = false
     ) {
@@ -34,6 +36,7 @@ final class RoomScan {
         self.subScoresData = subScoresData
         self.tipsData = tipsData
         self.roast = roast
+        self.verdict = verdict
         self.createdAt = createdAt
         self.isPremiumResult = isPremiumResult
     }
@@ -80,7 +83,8 @@ extension RoomScan {
             style: result.style,
             subScoresData: subScoresData,
             tipsData: tipsData,
-            roast: result.roast
+            roast: result.roast,
+            verdict: result.verdict
         )
     }
 }

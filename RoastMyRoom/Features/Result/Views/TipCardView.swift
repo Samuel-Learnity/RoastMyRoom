@@ -4,6 +4,7 @@ struct TipCardView: View {
     let tip: Tip
     let index: Int
     let isBlurred: Bool
+    var animated: Bool = true
     @State private var appeared = false
 
     var body: some View {
@@ -23,7 +24,7 @@ struct TipCardView: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(tip.text)
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .lineLimit(2)
 
                 // Impact indicator
@@ -40,26 +41,26 @@ struct TipCardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-        )
+        .glassBackground(cornerRadius: 20)
         .blur(radius: isBlurred ? 6 : 0)
         .overlay {
             if isBlurred {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(.ultraThinMaterial.opacity(0.5))
                     .overlay {
                         Image(systemName: "lock.fill")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.5))
                     }
             }
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 12)
         .onAppear {
-            withAnimation(.spring(duration: 0.5).delay(Double(index) * 0.15 + 1.5)) {
+            if animated {
+                withAnimation(.spring(duration: 0.5).delay(Double(index) * 0.12 + 0.3)) {
+                    appeared = true
+                }
+            } else {
                 appeared = true
             }
         }
@@ -81,17 +82,20 @@ struct TipCardView: View {
 }
 
 #Preview {
-    VStack(spacing: 12) {
-        TipCardView(
-            tip: Tip(text: "Replace the harsh overhead light with a warm floor lamp", impact: 0.8),
-            index: 0,
-            isBlurred: false
-        )
-        TipCardView(
-            tip: Tip(text: "Pick a two-color palette and ditch the clashing pillows", impact: 0.6),
-            index: 1,
-            isBlurred: true
-        )
+    ZStack {
+        GradientBackground()
+        VStack(spacing: 12) {
+            TipCardView(
+                tip: Tip(text: "Replace the harsh overhead light with a warm floor lamp", impact: 0.8),
+                index: 0,
+                isBlurred: false
+            )
+            TipCardView(
+                tip: Tip(text: "Pick a two-color palette and ditch the clashing pillows", impact: 0.6),
+                index: 1,
+                isBlurred: true
+            )
+        }
+        .padding()
     }
-    .padding()
 }

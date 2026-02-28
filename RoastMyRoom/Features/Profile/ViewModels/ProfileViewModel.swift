@@ -8,11 +8,6 @@ final class ProfileViewModel {
     private(set) var totalScans: Int = 0
     private(set) var averageScore: Float = 0
     private(set) var dominantStyle: String = "—"
-    @ObservationIgnored var preferredAppearance: String {
-        get { UserDefaults.standard.string(forKey: "preferredAppearance") ?? "system" }
-        set { UserDefaults.standard.set(newValue, forKey: "preferredAppearance") }
-    }
-
     private let storageService: StorageServiceProtocol
     let subscriptionService: SubscriptionService
     private let modelContext: ModelContext

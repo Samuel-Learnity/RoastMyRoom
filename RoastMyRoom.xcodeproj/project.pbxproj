@@ -21,6 +21,7 @@
 		7E0BF9072F4E6B1E00BAFC68 /* _current_branch in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8EC2F4E6B1E00BAFC68 /* _current_branch */; };
 		7E0BF9082F4E6B1E00BAFC68 /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */; };
 		7E0BF90A2F4E6D5E00BAFC68 /* roomscore-prompt-v2.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */; };
+		7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC184D02F5124740088CAF9 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		7E0BF8FB2F4E6B1E00BAFC68 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 		7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "roomscore-prompt-v2.md"; sourceTree = "<group>"; };
+		7EC184D02F5124740088CAF9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -68,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +86,7 @@
 				7E0BF8822F4E1C0E00BAFC68 /* SPEC.md */,
 				7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */,
 				7E0BF8FD2F4E6B1E00BAFC68 /* supabase */,
+				7EC184CF2F5124730088CAF9 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -151,6 +155,14 @@
 				7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */,
 			);
 			path = supabase;
+			sourceTree = "<group>";
+		};
+		7EC184CF2F5124730088CAF9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7EC184D02F5124740088CAF9 /* StoreKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -385,7 +397,6 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Roast​My​Room needs camera access to photograph your rooms and score them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -423,7 +434,6 @@
 				INFOPLIST_KEY_NSCameraUsageDescription = "Roast​My​Room needs camera access to photograph your rooms and score them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (

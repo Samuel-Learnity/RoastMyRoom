@@ -38,7 +38,7 @@ struct OnboardingView: View {
 
             skipButton
         }
-        .background(Color(.systemBackground))
+        .gradientBackground()
     }
 
     // MARK: - Subviews
@@ -49,17 +49,18 @@ struct OnboardingView: View {
 
             Image(systemName: image)
                 .font(.system(size: 80))
-                .foregroundStyle(Color.rsAccent)
+                .foregroundStyle(.white)
                 .symbolEffect(.pulse, options: .repeating)
 
             Text(title)
                 .font(.title)
                 .fontWeight(.bold)
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
 
             Text(subtitle)
                 .font(.body)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.6))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -79,6 +80,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Color.rsAccent, in: RoundedRectangle(cornerRadius: 16))
+                .neonGlow(radius: 20, opacity: 0.6)
         }
         .padding(.horizontal, 32)
     }
@@ -89,7 +91,7 @@ struct OnboardingView: View {
         } label: {
             Text(String(localized: "onboarding_skip"))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.5))
         }
         .padding()
     }
