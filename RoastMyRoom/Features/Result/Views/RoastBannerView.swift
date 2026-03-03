@@ -2,13 +2,6 @@ import SwiftUI
 
 struct RoastBannerView: View {
     let roast: String
-    var animated: Bool = true
-    @State private var visibleCharacters = 0
-    @State private var appeared = false
-
-    private var displayedText: String {
-        String(roast.prefix(visibleCharacters))
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -17,7 +10,6 @@ struct RoastBannerView: View {
                 Image(systemName: "flame.fill")
                     .font(.subheadline)
                     .foregroundStyle(Color.rsWarning)
-                    .symbolEffect(.bounce, value: appeared)
 
                 Text(String(localized: "roast_title"))
                     .font(.subheadline)
@@ -25,14 +17,12 @@ struct RoastBannerView: View {
                     .foregroundStyle(Color.rsWarning)
             }
 
-            // Typewriter roast text
-            Text(displayedText)
+            Text(roast)
                 .font(.body)
                 .italic()
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .contentTransition(.numericText())
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -42,32 +32,6 @@ struct RoastBannerView: View {
             glowRadius: 10,
             glowOpacity: 0.5
         )
-        .onAppear {
-            appeared = true
-            if animated {
-                startTypewriter()
-            } else {
-                visibleCharacters = roast.count
-            }
-        }
-    }
-
-    private func startTypewriter() {
-        let totalChars = roast.count
-        guard totalChars > 0 else { return }
-
-        // ~15ms per character for a fast typewriter
-        let interval: Double = 0.015
-        // Short delay before starting to let the view settle
-        let startDelay: Double = 0.5
-
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(Int(startDelay * 1000)))
-            for i in 1...totalChars {
-                visibleCharacters = i
-                try? await Task.sleep(for: .milliseconds(Int(interval * 1000)))
-            }
-        }
     }
 }
 

@@ -2,11 +2,14 @@ import SwiftUI
 import SwiftData
 
 struct HistoryView: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: HistoryViewModel?
+    @State var viewModel: HistoryViewModel?
     @Namespace private var heroNamespace
+    @State private var selectedScan: RoomScan?
+    @State private var showCoverOverlay = false
+    @State private var showUnlockConfirmation = false
+    @State private var scanToUnlock: RoomScan?
     let isPremium: Bool
-    let subscriptionService: SubscriptionService
+    let subscriptionService: SubscriptionServiceProtocol
     var onShowPaywall: (() -> Void)?
 
     private let columns = [
@@ -20,37 +23,40 @@ struct HistoryView: View {
                 GradientBackground()
 
                 Group {
-                    if let vm = viewModel {
+                    if let vm = viewModel, !vm.isLoading {
                         if vm.isEmpty {
                             emptyState
                         } else {
                             scrollContent(vm: vm)
                         }
                     } else {
-                        emptyState
+                        skeletonGrid
                     }
                 }
             }
+            .containerBackground(.clear, for: .navigation)
+            .background(ClearNavigationControllerBackground())
             .navigationTitle(String(localized: "history_title"))
             .toolbarColorScheme(.dark, for: .navigationBar)
-            .navigationDestination(for: RoomScan.self) { scan in
-                ResultView(
-                    viewModel: AppFactory.shared.makeResultViewModel(
-                        scanResult: ScanResult(from: scan),
-                        image: UIImage(data: scan.imageData) ?? UIImage(),
-                        isPremium: isPremium || scan.isPremiumResult,
-                        animateEntrance: false
-                    ),
-                    subscriptionService: subscriptionService,
-                    scan: scan
-                )
+            .fullScreenCover(item: $selectedScan) { scan in
+                NavigationStack {
+                    ResultView(
+                        viewModel: AppFactory.shared.makeResultViewModel(
+                            scanResult: ScanResult(from: scan),
+                            image: UIImage(data: scan.imageData) ?? UIImage(),
+                            isPremium: isPremium || scan.isPremiumResult,
+                            animateEntrance: false
+                        ),
+                        subscriptionService: subscriptionService,
+                        scan: scan,
+                        onDismiss: { selectedScan = nil }
+                    )
+                }
                 .navigationTransition(.zoom(sourceID: scan.id, in: heroNamespace))
             }
-            .task {
-                if viewModel == nil {
-                    viewModel = AppFactory.shared.makeHistoryViewModel(modelContext: modelContext)
-                }
-                viewModel?.loadScans()
+            .onAppear {
+                viewModel?.refreshScans()
+                AppFactory.shared.analyticsService.track(.screenView(screenName: "history"))
             }
             .alert(
                 String(localized: "history_delete_title"),
@@ -65,6 +71,48 @@ struct HistoryView: View {
                 Button(String(localized: "history_delete_cancel"), role: .cancel) {}
             } message: {
                 Text(String(localized: "history_delete_message"))
+            }
+            .alert(
+                String(localized: "confirm_use_point_title"),
+                isPresented: $showUnlockConfirmation
+            ) {
+                Button(String(localized: "confirm_use_point_action")) {
+                    if let scan = scanToUnlock {
+                        subscriptionService.deductPoint()
+                        scan.isPremiumResult = true
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        selectedScan = scan
+                    }
+                    scanToUnlock = nil
+                }
+                Button(String(localized: "confirm_use_point_cancel"), role: .cancel) {
+                    scanToUnlock = nil
+                }
+            } message: {
+                Text(String(localized: "confirm_use_point_unlock_message \(subscriptionService.pointsBalance)"))
+            }
+        }
+        .background {
+            GradientBackground().ignoresSafeArea()
+        }
+        .overlay(
+            Rectangle()
+                .fill(AnyShapeStyle(.thinMaterial))
+                .ignoresSafeArea()
+                .opacity(showCoverOverlay ? 1 : 0)
+                .animation(.easeInOut(duration: 0.25), value: showCoverOverlay)
+        )
+        .onChange(of: selectedScan) { _, newValue in
+            if newValue != nil {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    showCoverOverlay = true
+                }
+            } else {
+                DispatchQueue.main.async {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        showCoverOverlay = false
+                    }
+                }
             }
         }
     }
@@ -146,13 +194,23 @@ struct HistoryView: View {
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(Array(scans.enumerated()), id: \.element.id) { index, scan in
                     let globalIndex = startIndex + index
-                    let isLocked = !isPremium && globalIndex >= 3
+                    let isLocked = !isPremium && globalIndex >= 3 && !scan.isPremiumResult
 
                     if isLocked {
                         HistoryCardView(scan: scan, isLocked: true)
-                            .onTapGesture { onShowPaywall?() }
+                            .onTapGesture {
+                                if subscriptionService.hasPoints {
+                                    scanToUnlock = scan
+                                    showUnlockConfirmation = true
+                                } else {
+                                    onShowPaywall?()
+                                }
+                            }
                     } else {
-                        NavigationLink(value: scan) {
+                        Button {
+                            vm.trackCardTapped(scan)
+                            selectedScan = scan
+                        } label: {
                             HistoryCardView(scan: scan, isLocked: false)
                         }
                         .buttonStyle(.plain)

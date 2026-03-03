@@ -3,7 +3,7 @@ import SwiftUI
 struct AnalysisView: View {
     @Environment(\.modelContext) private var modelContext
     @State var viewModel: AnalysisViewModel
-    var onResult: (ScanResult, UIImage) -> Void
+    var onResult: (ScanResult, UIImage, RoomScan?) -> Void
     var onDismiss: () -> Void
 
     // Background
@@ -12,10 +12,7 @@ struct AnalysisView: View {
 
     // Neon ring
     @State private var ringProgress: CGFloat = 0
-    @State private var ringPulse: CGFloat = 1.0
     @State private var ringOpacity: Double = 0
-    @State private var neonRotation: Double = 0
-    @State private var glowIntensity: Double = 0.4
 
     // Percentage
     @State private var displayedPercent: Int = 0
@@ -52,16 +49,15 @@ struct AnalysisView: View {
             await viewModel.analyze(modelContext: modelContext)
         }
         .onChange(of: viewModel.currentStepIndex) { _, newIndex in
-            // Goal Gradient: spring gets faster as we approach completion
             let stepFraction = CGFloat(newIndex + 1) / CGFloat(viewModel.steps.count)
             let duration = 0.8 - (Double(newIndex) * 0.1)
 
             withAnimation(.spring(duration: duration)) {
                 ringProgress = stepFraction
             }
-        }
-        .onChange(of: viewModel.analysisPercent) { _, newPercent in
-            displayedPercent = newPercent
+
+            let stepPercents = [10, 40, 70, 92]
+            displayedPercent = stepPercents[min(newIndex, stepPercents.count - 1)]
         }
         .onChange(of: viewModel.state) { _, newState in
             handleStateChange(newState)
@@ -71,7 +67,7 @@ struct AnalysisView: View {
     // MARK: - Layer 1: Cinematic Background
 
     private var backgroundLayer: some View {
-        Image(uiImage: viewModel.image)
+        Image(uiImage: viewModel.displayImage)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .scaleEffect(photoScale)
@@ -86,27 +82,26 @@ struct AnalysisView: View {
             .ignoresSafeArea()
     }
 
-    // MARK: - Layer 2: Radial Scan Pulses (AI colored)
+    // MARK: - Layer 2: Radial Scan Ambient
 
     private var scanOverlayLayer: some View {
-        ZStack {
-            scanPulseCircle(color: .aiPurple, delay: 0)
-            scanPulseCircle(color: .aiLightBlue, delay: 1.5)
-        }
+        RadialGradient(
+            colors: [
+                Color.aiPurple.opacity(0.12),
+                Color.aiLightBlue.opacity(0.06),
+                .clear
+            ],
+            center: .center,
+            startRadius: 40,
+            endRadius: 300
+        )
         .allowsHitTesting(false)
-    }
-
-    private func scanPulseCircle(color: Color, delay: Double) -> some View {
-        Circle()
-            .stroke(color.opacity(0.15), lineWidth: 1.5)
-            .frame(width: 200, height: 200)
-            .modifier(PulseExpandModifier(delay: delay))
     }
 
     // MARK: - Layer 3: Floating Neon Particles
 
     private var particleLayer: some View {
-        TimelineView(.animation) { timeline in
+        TimelineView(.periodic(from: .now, by: 1.0 / 30.0)) { timeline in
             let elapsed = timeline.date.timeIntervalSince(particleStart)
 
             Canvas { context, size in
@@ -148,46 +143,26 @@ struct AnalysisView: View {
 
     // MARK: - Layer 4: Apple Intelligence Neon Ring
 
-    private var neonGradient: AngularGradient {
-        AngularGradient(
-            colors: Color.aiNeonPalette,
-            center: .center,
-            startAngle: .degrees(neonRotation),
-            endAngle: .degrees(neonRotation + 360)
-        )
-    }
-
-    private var offsetNeonGradient: AngularGradient {
-        AngularGradient(
-            colors: Color.aiNeonPalette,
-            center: .center,
-            startAngle: .degrees(neonRotation + 60),
-            endAngle: .degrees(neonRotation + 420)
-        )
-    }
+    private let neonGradient = AngularGradient(
+        colors: Color.aiNeonPalette,
+        center: .center
+    )
 
     private var centralRingLayer: some View {
         ZStack {
-            // Sub-layer 1: Deep outer glow (breathing)
+            // Merged glow (single blur pass)
             Circle()
-                .stroke(neonGradient, lineWidth: 20)
-                .frame(width: 220, height: 220)
-                .blur(radius: 30)
-                .opacity(glowIntensity * 0.5)
+                .stroke(neonGradient, lineWidth: 16)
+                .frame(width: 200, height: 200)
+                .blur(radius: 20)
+                .opacity(0.4)
 
-            // Sub-layer 2: Mid glow (offset rotation for depth)
-            Circle()
-                .stroke(offsetNeonGradient, lineWidth: 12)
-                .frame(width: 190, height: 190)
-                .blur(radius: 15)
-                .opacity(glowIntensity * 0.7)
-
-            // Sub-layer 3: Track ring
+            // Track ring
             Circle()
                 .stroke(Color.white.opacity(0.08), lineWidth: 4)
                 .frame(width: 160, height: 160)
 
-            // Sub-layer 4: Progress arc (Zeigarnik Effect — incomplete ring = tension)
+            // Progress arc + neon halo (single arc, shadow for glow)
             Circle()
                 .trim(from: 0, to: ringProgress)
                 .stroke(
@@ -196,24 +171,12 @@ struct AnalysisView: View {
                 )
                 .frame(width: 160, height: 160)
                 .rotationEffect(.degrees(-90))
+                .shadow(color: .aiPurple.opacity(0.6), radius: 8)
 
-            // Sub-layer 5: Inner neon halo (blurred duplicate = neon tube effect)
-            Circle()
-                .trim(from: 0, to: ringProgress)
-                .stroke(
-                    neonGradient,
-                    style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                )
-                .frame(width: 160, height: 160)
-                .rotationEffect(.degrees(-90))
-                .blur(radius: 8)
-                .opacity(glowIntensity)
-
-            // Sub-layer 6: Percentage counter (Commitment / Sunk Cost)
+            // Percentage counter
             percentageCounter
         }
         .opacity(ringOpacity)
-        .scaleEffect(ringPulse)
     }
 
     // MARK: - Percentage Counter
@@ -224,7 +187,7 @@ struct AnalysisView: View {
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .contentTransition(.numericText(value: Double(displayedPercent)))
-                .animation(.snappy(duration: 0.2), value: displayedPercent)
+                .animation(.spring(duration: 0.6), value: displayedPercent)
 
             Text(String(localized: "analysis_processing"))
                 .font(.caption2)
@@ -235,71 +198,103 @@ struct AnalysisView: View {
         }
     }
 
-    // MARK: - Layer 5: Step Indicators (AI colored)
+    // MARK: - Layer 5: Step Indicators (connected track)
 
     private let stepColors: [Color] = [.aiPurple, .aiPink, .aiLightBlue, .aiCoral]
+
+    private enum StepLayout {
+        static let iconSize: CGFloat = 36
+        static let connectorWidth: CGFloat = 32
+        static let trackHeight: CGFloat = 2
+        static let glowBlurRadius: CGFloat = 12
+    }
+
+    private let stepIconNames = [
+        "brain.head.profile.fill",
+        "wand.and.stars",
+        "square.grid.3x3.topleft.filled",
+        "chart.bar.fill"
+    ]
 
     private var stepIndicatorLayer: some View {
         VStack(spacing: 20) {
             Spacer()
 
             Text(viewModel.steps[viewModel.currentStepIndex])
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(.white.opacity(0.8))
                 .contentTransition(.numericText())
                 .animation(.spring(duration: 0.4), value: viewModel.currentStepIndex)
 
-            HStack(spacing: 24) {
-                ForEach(0..<viewModel.steps.count, id: \.self) { index in
-                    stepIcon(for: index)
-                }
-            }
-            .padding(.bottom, 60)
+            stepTrackWithIcons
+                .padding(.bottom, 60)
         }
         .padding(.horizontal, 24)
     }
 
-    private func stepIcon(for index: Int) -> some View {
-        let isCompleted = index < viewModel.currentStepIndex
-        let isActive = index == viewModel.currentStepIndex
-        let iconNames = [
-            "brain.head.profile.fill",
-            "wand.and.stars",
-            "square.grid.3x3.topleft.filled",
-            "chart.bar.fill"
-        ]
-        let color = stepColors[index]
+    private var stepTrackWithIcons: some View {
+        let stepCount = viewModel.steps.count
 
-        return VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(
-                        isCompleted
-                            ? color
-                            : (isActive ? color.opacity(0.2) : Color.white.opacity(0.08))
-                    )
-                    .frame(width: 44, height: 44)
-
-                if isCompleted {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .transition(.scale.combined(with: .opacity))
-                } else {
-                    Image(systemName: iconNames[index])
-                        .font(.system(size: 18))
-                        .foregroundStyle(isActive ? .white : .white.opacity(0.3))
-                        .symbolEffect(.bounce, value: isActive ? viewModel.currentStepIndex : -1)
+        return HStack(spacing: 0) {
+            ForEach(0..<stepCount, id: \.self) { index in
+                stepCircle(for: index)
+                if index < stepCount - 1 {
+                    stepConnector(at: index)
                 }
             }
-            .animation(.spring(duration: 0.4), value: viewModel.currentStepIndex)
-
-            Circle()
-                .fill(isCompleted || isActive ? color : Color.white.opacity(0.15))
-                .frame(width: 6, height: 6)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.currentStepIndex)
         }
+        .animation(.spring(duration: 0.6, bounce: 0.15), value: viewModel.currentStepIndex)
+    }
+
+    private func stepConnector(at index: Int) -> some View {
+        let isFilled = viewModel.currentStepIndex > index
+        let gradient = LinearGradient(
+            colors: [stepColors[index], stepColors[index + 1]],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+
+        return ZStack {
+            Capsule()
+                .fill(Color.white.opacity(0.08))
+                .frame(width: StepLayout.connectorWidth, height: StepLayout.trackHeight)
+
+            Capsule()
+                .fill(gradient)
+                .frame(width: StepLayout.connectorWidth, height: StepLayout.trackHeight)
+                .blur(radius: StepLayout.glowBlurRadius)
+                .opacity(isFilled ? 0.6 : 0)
+
+            Capsule()
+                .fill(gradient)
+                .frame(width: StepLayout.connectorWidth, height: StepLayout.trackHeight)
+                .opacity(isFilled ? 1 : 0)
+        }
+    }
+
+    private func stepCircle(for index: Int) -> some View {
+        let isCompleted = index < viewModel.currentStepIndex
+        let isActive = index == viewModel.currentStepIndex
+        let color = stepColors[index]
+
+        return Group {
+            if isCompleted {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .transition(.scale.combined(with: .opacity))
+            } else {
+                Image(systemName: stepIconNames[index])
+                    .font(.system(size: 15))
+                    .foregroundStyle(isActive ? .white : .white.opacity(0.25))
+                    .symbolEffect(.bounce, value: isActive ? viewModel.currentStepIndex : -1)
+            }
+        }
+        .frame(width: StepLayout.iconSize, height: StepLayout.iconSize)
+        .glassEffect(.regular.interactive(), in: .circle)
+        .tint(isCompleted || isActive ? color : .white.opacity(0.15))
+        .animation(.spring(duration: 0.4), value: viewModel.currentStepIndex)
     }
 
     // MARK: - Layer 6: Completion Flash (AI tinted)
@@ -371,40 +366,16 @@ struct AnalysisView: View {
         withAnimation(.spring(duration: 0.6)) {
             ringProgress = 1.0 / CGFloat(viewModel.steps.count)
         }
-
-        // Neon glow breathing (Variable Reward — intensity fluctuates)
-        withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-            glowIntensity = 0.8
-        }
-
-        // Ring scale pulse
-        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-            ringPulse = 1.04
-        }
-
-        // Continuous neon color rotation (Apple Intelligence cycling)
-        withAnimation(.linear(duration: 4.0).repeatForever(autoreverses: false)) {
-            neonRotation = 360
-        }
     }
 
     private func handleStateChange(_ newState: AnalysisViewModel.State) {
         switch newState {
-        case .success(let result):
-            // Snap ring to full (Peak-End Rule)
+        case .success(let result, let scan):
+            // Snap ring + percent to full (Peak-End Rule)
             withAnimation(.spring(duration: 0.3, bounce: 0.2)) {
                 ringProgress = 1.0
             }
-
-            // Boost glow to maximum
-            withAnimation(.easeIn(duration: 0.2)) {
-                glowIntensity = 1.0
-            }
-
-            // Scale pop
-            withAnimation(.spring(duration: 0.3, bounce: 0.4)) {
-                ringPulse = 1.15
-            }
+            displayedPercent = 100
 
             // Flash
             withAnimation(.easeIn(duration: 0.12)) {
@@ -415,10 +386,9 @@ struct AnalysisView: View {
                 try? await Task.sleep(for: .milliseconds(400))
                 withAnimation(.easeOut(duration: 0.2)) {
                     showCompletionFlash = false
-                    ringPulse = 1.0
                 }
                 try? await Task.sleep(for: .milliseconds(300))
-                onResult(result, viewModel.image)
+                onResult(result, viewModel.displayImage, scan)
             }
 
         case .error:
@@ -482,29 +452,6 @@ private struct SeededRandomNumberGenerator: RandomNumberGenerator {
     }
 }
 
-// MARK: - Pulse Expand Modifier
-
-private struct PulseExpandModifier: ViewModifier {
-    let delay: Double
-    @State private var isExpanded = false
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(isExpanded ? 4.0 : 0.5)
-            .opacity(isExpanded ? 0 : 0.8)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                    withAnimation(
-                        .easeOut(duration: 3.0)
-                        .repeatForever(autoreverses: false)
-                    ) {
-                        isExpanded = true
-                    }
-                }
-            }
-    }
-}
-
 // MARK: - Preview
 
 #Preview {
@@ -514,7 +461,7 @@ private struct PulseExpandModifier: ViewModifier {
             scoringService: MockScoringService(),
             storageService: StorageService()
         ),
-        onResult: { _, _ in },
+        onResult: { _, _, _ in },
         onDismiss: { }
     )
 }

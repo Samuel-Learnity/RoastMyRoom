@@ -42,7 +42,7 @@ struct TipCardView: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassBackground(cornerRadius: 20)
-        .blur(radius: isBlurred ? 6 : 0)
+        .redacted(reason: isBlurred ? .placeholder : [])
         .overlay {
             if isBlurred {
                 RoundedRectangle(cornerRadius: 20)
@@ -66,18 +66,18 @@ struct TipCardView: View {
         }
     }
 
-    private var impactBar: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.rsSuccess.opacity(0.12))
+    private static let impactBarWidth: CGFloat = 60
 
-                Capsule()
-                    .fill(Color.rsSuccess.opacity(0.5))
-                    .frame(width: geometry.size.width * CGFloat(tip.impact / 2.0))
-            }
+    private var impactBar: some View {
+        ZStack(alignment: .leading) {
+            Capsule()
+                .fill(Color.rsSuccess.opacity(0.12))
+
+            Capsule()
+                .fill(Color.rsSuccess.opacity(0.5))
+                .frame(width: Self.impactBarWidth * CGFloat(tip.impact / 2.0))
         }
-        .frame(width: 60, height: 4)
+        .frame(width: Self.impactBarWidth, height: 4)
     }
 }
 

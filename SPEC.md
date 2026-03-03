@@ -1,4 +1,4 @@
-# SPEC.md — RoomScore MVP
+# SPEC.md — RoastMyRoom MVP
 
 > Spécification technique du MVP (v1.0).
 > Source de vérité unique. Toute feature absente est hors scope.
@@ -7,11 +7,11 @@
 
 ## 1. Concept
 
-**RoomScore** — Photo d'une pièce → Score /10 par IA → Carte partageable → Boucle virale.
+**RoastMyRoom** — Photo d'une pièce → Score /10 par IA → Carte partageable → Boucle virale.
 
 - **Promesse** : "Snap. Score. Share."
-- **Target** : iOS 17+, iPhone uniquement (pas iPad)
-- **Langues** : FR + EN
+- **Target** : iOS 26+, iPhone uniquement (pas iPad)
+- **Langues** : EN + FR + DE + ES
 
 ---
 
@@ -20,9 +20,9 @@
 MVVM strict. Injection via `AppFactory` (composition root, singleton).
 
 ```
-RoomScore/
+RoastMyRoom/
   App/
-    RoomScoreApp.swift              — @main, WindowGroup, lance RootView
+    RoastMyRoomApp.swift            — @main, WindowGroup, lance RootView
     AppFactory.swift                — DI container singleton, crée services + VMs
     RootView.swift                  — Gère first launch (onboarding) → TabView
 
@@ -33,21 +33,32 @@ RoomScore/
       SubScores.swift               — Struct Codable : colorHarmony, proportions, lighting, cleanliness, personality (Float 0-10)
       Tip.swift                     — Struct Codable : text (String), estimatedImpact (Float)
       ScanResult.swift              — Struct Codable : réponse brute API → mapped vers RoomScan
+      PersonalityAnalysis.swift     — Struct Codable : traits, celebrity_match, dating_line
+      SubScoreComments.swift        — Struct Codable : 5 commentaires sarcastiques (1 par sous-score)
+      MoodBoard.swift               — Struct Codable : color_palette (5 hex), suggestions (3 items)
+      PointsPack.swift              — Struct Sendable : packs de points consommables
+      AnalyticsEvent.swift          — Factory methods statiques pour événements tracking
+      AuthSession.swift             — Struct Codable : accessToken, refreshToken, userId, expiresAt
     Services/
       ScoringService.swift          — Protocole + impl : envoie photo, reçoit ScanResult
       APIClient.swift               — URLSession minimal, POST base64 → Supabase Edge Function
       ImageProcessor.swift          — Compression JPEG, resize, validation (est-ce une pièce ?)
       ShareCardRenderer.swift       — UIGraphicsImageRenderer → UIImage carte partageable
-      SubscriptionService.swift     — StoreKit 2 : products, purchase, restore, status
+      SubscriptionService.swift     — Protocole + impl StoreKit 2 : products, purchase, restore, status, points
       StorageService.swift          — SwiftData wrapper : save/fetch/delete RoomScan
+      KeychainService.swift         — Security.framework : persistence anti-abus (points, scans, onboarding)
+      AuthService.swift             — Sign in with Apple + Supabase Auth
+      AnalyticsService.swift        — Firebase Analytics wrapper
     Extensions/
-      Color+Theme.swift             — Couleurs sémantiques adaptatives (light/dark)
-      View+Extensions.swift         — Modifiers : .glassBackground, .scoreColor, .shimmer
+      Color+Theme.swift             — Couleurs sémantiques adaptatives + AI neon palette
+      View+Extensions.swift         — Modifiers : .glassBackground, .neonGlow, .aiGlow, .shimmer
       Image+Compression.swift       — UIImage → JPEG compressé/resizé
 
   Features/
     Onboarding/
       OnboardingView.swift          — 3 slides PageTabView, demande permission caméra au CTA final
+    ATT/
+      ATTPrePromptView.swift        — Pré-prompt App Tracking Transparency
     Scan/
       Views/
         ScanView.swift              — Caméra plein écran, shutter, galerie, flash
@@ -56,17 +67,20 @@ RoomScore/
         ScanViewModel.swift         — Gère AVCaptureSession, capture, permissions
     Analysis/
       Views/
-        AnalysisView.swift          — Loading animé : scan laser + textes rotatifs + progress bar
+        AnalysisView.swift          — Loading animé : neon ring, step indicators, particules
       ViewModels/
         AnalysisViewModel.swift     — Orchestre ImageProcessor → ScoringService → nav résultat
     Result/
       Views/
-        ResultView.swift            — Scroll vertical : hero photo, score, badge, roast, sous-scores, tips, action bar
-        ScoreCounterView.swift      — Compteur animé 0→score, couleur dynamique
+        ResultView.swift            — Scroll vertical : hero photo, score, badge, roast, sous-scores, tips, personality, mood board
+        ScoreCounterView.swift      — Compteur animé 0→score, glow neon, couleur dynamique
         RadarChartView.swift        — Shape pentagone 5 axes, trim animation
-        StyleBadgeView.swift        — Capsule colorée : icône + nom style
+        StyleBadgeView.swift        — Capsule Liquid Glass : icône + nom style
         TipCardView.swift           — Card : icône + texte + "+X.X pts"
         RoastBannerView.swift       — Bandeau sarcastique, toujours visible (même free)
+        PersonalityCardView.swift   — Traits capsules, celebrity match neon, dating line italic
+        SubScoreDetailView.swift    — 5 rows : icône + score + commentaire sarcastique
+        MoodBoardView.swift         — Palette 5 couleurs + 3 suggestions numérotées
       ViewModels/
         ResultViewModel.swift       — Display data, share logic, paywall trigger
     History/
@@ -82,13 +96,14 @@ RoomScore/
         ProfileViewModel.swift      — Stats agrégées, subscription status
     Paywall/
       Views/
-        PaywallView.swift           — Sheet : fond photo blurée, 3 plans, CTA
+        PaywallView.swift           — Sheet : fond photo blurée, tab points/abo, CTA
         PlanCardView.swift          — Card prix individuelle
+        PointsPackCardView.swift    — Card pack de points
       ViewModels/
         PaywallViewModel.swift      — StoreKit 2 products, purchase, restore
   Resources/
     Assets.xcassets
-    Localizable.xcstrings           — FR + EN
+    Localizable.xcstrings           — EN + FR + DE + ES
 ```
 
 ---
@@ -109,7 +124,7 @@ Matériau Liquid Glass (translucide + blur). Accent : indigo `#5E5CE6`. Pas de 4
 
 ```
 App Launch
-  ├─ First Launch → OnboardingView (3 slides) → ScanView
+  ├─ First Launch → ATTPrePromptView → OnboardingView (3 slides) → ScanView
   └─ Return User → ScanView (tab 1)
 
 ScanView
@@ -149,10 +164,10 @@ ProfileView
 
 - Plein écran, zéro navigation bar
 - `AVCaptureVideoPreviewLayer` via UIViewRepresentable
-- Shutter : centre bas, 72pt blanc, anneau 80pt, `shadow(radius: 8)`
-- Galerie : bas gauche, 44pt, miniature dernière photo (PHAsset)
+- Shutter : centre bas dans `tabViewBottomAccessory`, 32pt fill blanc, anneau 38pt stroke
+- Galerie : bas gauche, PhotosPicker (SPM), 44pt
 - Flash : haut droite, `bolt.fill` / `bolt.slash.fill`, 3 états (auto/on/off)
-- Guide "Cadrez votre pièce" : fade-out après 2s
+- Guide CTA (titre + sous-titre) : fade-in 0.3s delay 0.3s, fade-out après 4s
 - Capture JPEG `.high` via `AVCapturePhotoOutput`
 - Haptic `.medium` au shutter
 - PHPickerViewController pour galerie (1 image, pas vidéo)
@@ -161,11 +176,13 @@ ProfileView
 ### S2 — Analyse (Loading)
 
 - **Durée min 2.5s** (artificiel même si API plus rapide — suspense)
-- Fond : photo capturée, blur progressif 0→20
-- Scan laser : ligne horizontale gradient blanc, descend en boucle
-- Textes rotatifs (0.8s) : "Analyse des couleurs..." → "Détection du style..." → "Évaluation du layout..." → "Calcul du score..."
-- ProgressView linéaire indigo
-- Haptic `.light` à chaque transition texte
+- Fond : photo capturée, blur progressif 0→20 + scale lente
+- Neon ring central : AngularGradient AI palette, progress arc, percentage counter
+- Particules bokeh flottantes (Canvas 30fps, palette neon)
+- Step indicators : 4 icônes Liquid Glass connectées par des tracks avec glow gradient
+- Textes rotatifs (0.8s) : label du step courant avec `.contentTransition(.numericText())`
+- Haptics escalading : `.medium` → `.rigid` → `.heavy` à chaque transition step
+- Completion : flash + haptic burst (`.success` + `.heavy`)
 
 ### S3 — Résultat (Score Card)
 
@@ -190,14 +207,24 @@ Scroll vertical, sections empilées :
 │                                 │
 │  ┌─ Radar Chart (pentagone) ──┐ │  ← 5 sous-scores, anim trim 0.8s
 │  └────────────────────────────┘ │
+│  ┌─ Sub-Score Comments ───────┐ │  ← 5 rows : score + mini-roast sarcastique
+│  └────────────────────────────┘ │
 │  ┌─ Tip 1 ────────────────────┐ │  ← 1 visible free
 │  │ 🪴 "Floor plant" +0.8      │ │
 │  └────────────────────────────┘ │
 │  ┌─ Tip 2 (blurred) ─────────┐ │  ← 2-3 blurés
 │  └────────────────────────────┘ │
-├─────────────────────────────────┤
-│ [ 📤 Share ]  [ 🔄 Scan Again] │  ← Sticky bottom
+│  ── Personality ──────────────  │
+│  ┌─ Traits capsules ─────────┐ │  ← 3 traits en capsules
+│  │ Celebrity Match (neon glow)│ │  ← "Nick Miller — ce canapé..."
+│  │ Dating Line (italic)       │ │  ← "Ton date penserait que..."
+│  └────────────────────────────┘ │
+│  ── Mood Board ───────────────  │
+│  ┌─ Palette 5 couleurs ──────┐ │  ← 5 cercles hex + labels
+│  │ 3 suggestions numérotées  │ │  ← Items concrets avec specs
+│  └────────────────────────────┘ │
 └─────────────────────────────────┘
+Toolbar : [✕ Fermer] [↺ Scan Again] [↗ Share (.glassProminent)]
 ```
 
 **Couleur dynamique du score** :
@@ -221,7 +248,7 @@ Scroll vertical, sections empilées :
 - Card : photo 4:3 radius 16, gradient bas + score bas-droite (28pt bold blanc shadow)
 - Sections : "Cette semaine" / "Plus ancien"
 - Tap → push ResultView (relecture)
-- Swipe left → delete + confirmation
+- Long press → context menu → delete + confirmation
 - Empty state : illustration + "Votre première pièce vous attend" + CTA caméra
 - Limite free : 3 derniers scans visibles, reste grisé + lock → paywall
 
@@ -239,8 +266,8 @@ Scroll vertical, sections empilées :
 
 - `.sheet`, `.presentationDetents([.large])`, toujours dismissable (X + swipe + lien texte bas)
 - Fond : photo de la pièce, blur 20, overlay sombre 60%
-- Score qui pulse (scale loop) + "Débloquez l'analyse complète"
-- 3 bullets animés checkmark : sous-scores, tips personnalisés, historique illimité
+- Score statique (pas d'animation infinie) + "Débloquez l'analyse complète"
+- 4 bullets checkmark : scans illimités, sous-scores + radar, tips personnalisés, historique illimité
 - 3 plans :
 
 | Plan | Product ID | Prix | Trial | Note |
@@ -277,12 +304,11 @@ UIImage (capture)
 
 Le prompt complet est dans `roomscore-prompt-v2.md`. Points clés :
 
-- **Personnalité** : "ruthlessly honest interior design critic with comedic timing"
-- **Output** : JSON strict, même schéma que v1 (pas de changement structurel)
-- **Scoring rubric** : grille d'ancrage détaillée pour chaque sous-score (2/5/8/10)
-- **Distribution** : médiane ~5.0-5.5, 7+ rare (1/4 des pièces), 10 quasi inatteignable
-- **Formule** : `overall_score = round((color_harmony × 2 + proportions + lighting + cleanliness + personality × 2) / 8, 1)`
-- **Roasts** : 5 registres comiques (pop culture, observation ciblée, comparaison exagérée, compliment détourné, anthropomorphisme), doit référencer un élément visible
+- **Personnalité** : "the most savage room critic on the internet"
+- **Output** : JSON strict
+- **Scoring rubric** : grille d'ancrage détaillée pour chaque sous-score (1-3 / 4-5 / 6-7 / 8-9 / 10). Utiliser toute l'échelle 0-10, ne pas compresser dans le 4-6.
+- **Formule** : `overall_score = round((color_harmony + proportions + lighting + cleanliness + personality) / 5, 1)` — poids égaux
+- **Roasts** : 10+ registres comiques (comparaisons, absurde, object callouts, fake POV, pop culture burns, backhanded compliments, dating roasts, internet slang, capitulation humor, existential humor). Ban list de mots recyclés ("fuir", "crier", "s'enfuir"). Doit référencer un élément visible.
 - **Tips** : spécifiques à la photo, prioriser le sous-score le plus faible, max 15 mots, somme impacts ≤ 3.5
 - **Styles** : 17 styles avec descriptions visuelles d'identification
 - **Edge cases** : non-pièce → `room_type: "other"`, `overall_score: 0.0` ; photo sombre → tip dédié ; pièce stagée → roast adapté
@@ -295,15 +321,18 @@ La Edge Function applique des garde-fous après la réponse IA :
 | Validation | Comportement |
 |------------|-------------|
 | Scores hors range | Clamp 0.0-10.0, arrondi 1 décimale |
-| `overall_score` incohérent | Si écart > 0.5 vs formule, recalculé automatiquement |
+| `overall_score` incohérent | Toujours recalculé depuis les sous-scores (le serveur ne fait pas confiance à l'IA) |
 | Somme impacts tips > 3.5 | Impacts réduits proportionnellement |
+| `personality` malformé | Supprimé silencieusement (traits ≠ 3, champs manquants) |
+| `sub_score_comments` malformé | Supprimé silencieusement (5 clés string requises) |
+| `mood_board` malformé | Supprimé silencieusement (5 hex valides + 3 suggestions requises) |
 
 ### Réponse type
 
 ```json
 {
   "room_type": "bedroom",
-  "overall_score": 4.9,
+  "overall_score": 5.7,
   "style": "Student Chaos",
   "sub_scores": {
     "color_harmony": 5.5,
@@ -318,7 +347,27 @@ La Edge Function applique des garde-fous après la réponse IA :
     { "text": "Hide cables with an adhesive raceway behind the desk", "impact": 0.4 }
   ],
   "roast": "That one decorative pillow is doing community service for the whole couch.",
-  "verdict": "Bof bof"
+  "verdict": "Bof bof",
+  "personality": {
+    "traits": ["Chronic overthinker", "IKEA loyalist", "Hopeless romantic"],
+    "celebrity_match": "Nick Miller — ce canapé a vécu des choses",
+    "dating_line": "Ton date penserait que t'as un bon crédit immobilier."
+  },
+  "sub_score_comments": {
+    "color_harmony": "Ces couleurs se battent en duel et personne gagne.",
+    "proportions": "T'as mis les meubles au hasard ou c'était volontaire ?",
+    "lighting": "L'éclairage dit 'salle d'attente chez le dentiste'.",
+    "cleanliness": "Pas dégueulasse, mais ta mère serait pas fière.",
+    "personality": "Y'a autant de personnalité qu'un hall d'aéroport."
+  },
+  "mood_board": {
+    "color_palette": ["#E8D5B7", "#2C3E50", "#D4A574", "#8B9DC3", "#F5E6CC"],
+    "suggestions": [
+      "Un tapis berbère beige 160×230",
+      "Remplacer l'ampoule par une 2700K",
+      "Ajouter 2-3 coussins bleu marine"
+    ]
+  }
 }
 ```
 
@@ -355,26 +404,40 @@ class RoomScan {
     var verdict: String             // 1-3 mots, réaction courte proportionnelle au score
     var createdAt: Date
     var isPremiumResult: Bool
+    var personalityData: Data?       // PersonalityAnalysis encodé JSON (optionnel)
+    var subScoreCommentsData: Data?  // SubScoreComments encodé JSON (optionnel)
+    var moodBoardData: Data?         // MoodBoard encodé JSON (optionnel)
 }
 ```
 
 ### Supabase (remote)
 
-- **Auth** : Anonyme. Device ID uniquement. Pas de compte utilisateur MVP.
-- **Edge Function** : `POST /score` — proxy vers OpenAI, rate limit par device ID
+- **Auth** : Sign in with Apple (optionnel) via Supabase Auth. Permet sync cross-device des points.
+- **Edge Function** : `POST /score` — proxy vers OpenAI GPT-4.1 mini, rate limit par device ID
 - **Storage** : Non utilisé MVP (photos locales uniquement)
-- **PostgreSQL** : Table `scan_events(device_id, room_type, score, created_at)` pour analytics. Pas de PII.
+- **PostgreSQL** : Table `scan_events(device_id, room_type, score, created_at)` pour analytics. Table `user_points` pour sync. Pas de PII.
+
+### Keychain (persistence anti-abus)
+
+Les données sensibles sont en Keychain (survivent à une désinstallation) :
+
+| Clé | Type | Usage |
+|-----|------|-------|
+| `pointsBalance` | Int | Solde de points consommables |
+| `pointsBalanceInitialized` | Bool | 2 pts offerts au 1er lancement |
+| `dailyScanCount` | Int | Scans du jour |
+| `lastScanDate` | Date | Reset quotidien |
+| `hasSeenOnboarding` | Bool | Onboarding vu (miroir AppStorage pour SwiftUI) |
+| `auth_access_token` | String | Token Supabase (si connecté) |
+| `auth_refresh_token` | String | Refresh token (si connecté) |
+| `auth_user_id` | String | User ID (si connecté) |
 
 ### AppStorage
 
 | Clé | Type | Usage |
 |-----|------|-------|
-| `hasSeenOnboarding` | Bool | Onboarding vu |
-| `dailyScanCount` | Int | Scans du jour |
-| `lastScanDate` | Date | Reset quotidien |
+| `hasSeenOnboarding` | Bool | Miroir Keychain pour SwiftUI |
 | `preferredAppearance` | String | system / light / dark |
-| `pointsBalance` | Int | Solde de points consommables |
-| `pointsBalanceInitialized` | Bool | 2 pts offerts au 1er lancement |
 
 ---
 
@@ -401,15 +464,18 @@ class RoomScan {
 | Scans/jour | 2 | Illimité |
 | Score global + badge + roast | ✅ | ✅ |
 | 5 sous-scores + radar chart | Blurés | ✅ |
+| Commentaires par sous-score | Blurés | ✅ |
 | Tips | 1 visible | 3 personnalisés |
+| Personality (traits, celebrity, dating) | Blurée | ✅ |
+| Mood Board (palette + suggestions) | Bluré | ✅ |
 | Historique | 3 derniers | Illimité |
-| Share card | Avec watermark | Sans watermark |
+| Share card | Avec watermark | Sans watermark + celebrity match |
 
 ### Système de Points (Consumable)
 
 Points = monnaie consommable pour débloquer des fonctions sans abonnement.
 
-**Attribution initiale** : 2 points offerts à la première ouverture de l'app.
+**Attribution initiale** : 4 points offerts à la première ouverture de l'app.
 
 **Utilisation** :
 - **1 point = 1 scan supplémentaire** au-delà du quota gratuit (2/jour). Priorité : premium → free daily → points.
@@ -424,7 +490,7 @@ Points = monnaie consommable pour débloquer des fonctions sans abonnement.
 | Large | `roomscore.points.75` | 4.99€ | 75 | Best Value |
 | XL | `roomscore.points.200` | 9.99€ | 200 | — |
 
-**Persistence** : `UserDefaults` (`pointsBalance`). Les consumables ne sont pas restaurables (mentionné en fine print paywall).
+**Persistence** : Keychain (`pointsBalance`), survit à la désinstallation. Les consumables ne sont pas restaurables (mentionné en fine print paywall).
 
 **Paywall redesigné** :
 - Tab picker : "Acheter des points" (défaut) | "Passer illimité" (abonnements)
@@ -432,9 +498,23 @@ Points = monnaie consommable pour débloquer des fonctions sans abonnement.
 - Tab abonnements : 3 plans existants (inchangé)
 - CTA dynamique selon le tab sélectionné
 
+**Confirmation de dépense** :
+- Toute dépense de point déclenche une alerte de confirmation : titre "Utiliser 1 point ?", message contextuel avec le solde restant, boutons "Utiliser" / "Annuler".
+- S'applique au scan (ScanView), au déblocage (ResultView) et au déblocage depuis l'historique (HistoryView).
+
 **Déblocage dans ResultView** :
 - Bouton principal : ouvre paywall (abonnement)
-- Bouton secondaire : "Débloquer (1 pt)" si points dispo, sinon ouvre paywall tab points
+- Bouton secondaire : "Débloquer (1 pt)" si points dispo → alerte confirmation → `unlockWithPoint()`, sinon ouvre paywall tab points
+
+**Déblocage dans HistoryView** :
+- Tap sur un scan verrouillé (position ≥ 3, non premium, `isPremiumResult == false`) :
+  - Si `hasPoints` → alerte confirmation → `deductPoint()` + `scan.isPremiumResult = true` (SwiftData persiste). La carte est ensuite déverrouillée définitivement (survit aux relances).
+  - Si pas de points → ouvre paywall
+- Le verrou dans la grille tient compte de `isPremiumResult` : un scan débloqué par point reste accessible même après relance de l'app.
+
+**Animation status bar (ScanView)** :
+- Points en hausse (`new > old`) : scale up + flash doré (existant)
+- Points en baisse (`new < old`) : shake horizontal + flash orange
 
 **Achat depuis Profile** :
 - Section "Points" avec solde actuel + bouton "Acheter des points" → paywall tab points
@@ -453,12 +533,12 @@ Points = monnaie consommable pour débloquer des fonctions sans abonnement.
 | Score | 96pt bold blanc, centre-haut |
 | Badge | Capsule blanc semi-transparent |
 | Roast | 16pt blanc italic, centré bas |
-| Branding | "RoomScore" + "roomscore.app" |
-| Watermark free | "roomscore.app" semi-transparent centre |
+| Branding | "RoastMyRoom" + lien app |
+| Watermark free | Branding semi-transparent centre |
 
 Génération via `UIGraphicsImageRenderer`. Pas de SwiftUI snapshot (inconsistant cross-device).
 
-Partage : `UIActivityViewController` — image + "Mon salon a eu {score}/10 sur RoomScore 🏠✨ roomscore.app"
+Partage : `UIActivityViewController` — image + texte de partage dynamique
 
 ---
 
@@ -468,13 +548,17 @@ Partage : `UIActivityViewController` — image + "Mon salon a eu {score}/10 sur 
 
 | Moment | Type | Durée |
 |--------|------|-------|
-| Score reveal | Spring counter 0→N | 1.2s, `.spring(dampingFraction: 0.7)` |
+| Score reveal | Spring counter 0→N | 1.2s, `.easeOut` |
 | Radar chart | trim 0→1 | 0.8s, `.easeOut` |
-| Badge style | scale 0.5→1 + fade | 0.3s |
-| Scan laser | offset.y loop | 2.5s, `.repeatForever` |
-| Loading text | `.transition(.opacity)` | 0.4s |
+| Badge style | scale 0.5→1 + fade | 0.3s, `.spring` |
+| Analysis ring | progress arc spring | 0.6-0.8s par step |
+| Analysis steps | spring step indicators + connectors | 0.6s, `.spring(bounce: 0.15)` |
+| Analysis percent | `.contentTransition(.numericText())` | 0.6s, `.spring` |
+| Analysis bg | blur 0→20 + scale 1→1.08 | 4s, one-shot |
 | Paywall | `.sheet` natif | 0.35s |
-| Blur wall | blur 0→20 + lock fade | 0.5s |
+| Completion flash | white flash + scale pop | 0.4s one-shot |
+
+**Règle perf** : Zéro `.repeatForever` dans les vues principales (ResultView, AnalysisView). Particules Canvas à 30fps max.
 
 ### Haptics
 
@@ -482,9 +566,11 @@ Partage : `UIActivityViewController` — image + "Mon salon a eu {score}/10 sur 
 |-----------|------|
 | Shutter | `UIImpactFeedbackGenerator(.medium)` |
 | Score reveal final | `UINotificationFeedbackGenerator(.success)` |
-| Loading step | `UIImpactFeedbackGenerator(.light)` |
+| Loading step 1 | `UIImpactFeedbackGenerator(.medium)` |
+| Loading step 2 | `UIImpactFeedbackGenerator(.rigid)` |
+| Loading step 3 | `UIImpactFeedbackGenerator(.heavy)` |
+| Completion burst | `.success` + `.heavy` |
 | Tab switch | `UISelectionFeedbackGenerator()` |
-| CTA paywall | `UIImpactFeedbackGenerator(.heavy)` |
 | Share done | `UINotificationFeedbackGenerator(.success)` |
 
 ---
@@ -507,11 +593,17 @@ Permission demandée après le 1er scan réussi. Jamais au lancement.
 
 ```swift
 extension Color {
+    // Semantic
     static let rsAccent = Color("AccentColor")     // #5E5CE6
     static let rsSuccess = Color.green              // system
     static let rsWarning = Color.orange             // system
     static let rsDanger = Color.red                 // system
-    static let rsGlass = Color.white.opacity(0.7)   // Liquid Glass surface
+
+    // AI Neon Palette (analyse, score glow, step indicators)
+    static let aiPurple    = Color(red: 0.737, green: 0.510, blue: 0.953) // #BC82F3
+    static let aiPink      = Color(red: 0.961, green: 0.725, blue: 0.918) // #F5B9EA
+    static let aiLightBlue = Color(red: 0.553, green: 0.624, blue: 1.0)   // #8D9FFF
+    static let aiCoral     = Color(red: 1.0, green: 0.404, blue: 0.471)   // #FF6778
 
     static func scoreColor(for score: Float) -> Color {
         switch score {
@@ -550,6 +642,7 @@ extension Color {
 |---------|-------------|----------|
 | Supabase | 0€ (free tier) | 25€/mois |
 | OpenAI GPT-4.1 mini | ~100€/mois | ~1000€/mois |
+| Firebase Analytics | 0€ (free tier) | 0€ (free tier) |
 | Apple Developer | 99€/an | 99€/an |
 | Total | ~100-200€/mois | ~1000-1200€/mois |
 
@@ -562,11 +655,11 @@ Optimisations : 2 scans/jour free, JPEG compress, cache local, edge function rat
 - ❌ iPad / macOS / visionOS
 - ❌ AI Redesign ("montre ma pièce en Japandi")
 - ❌ Shopping list / liens affiliés
-- ❌ Color palette extraction
+- ~~❌ Color palette extraction~~ → Implémenté via Mood Board IA
 - ❌ Leaderboard global / Challenge a Friend
 - ❌ Before/After comparator
 - ❌ Widget iOS / App Clip
-- ❌ Compte utilisateur (login/signup)
-- ❌ Sync cross-device
+- ~~❌ Compte utilisateur~~ → Implémenté via Sign in with Apple + Supabase Auth
+- ~~❌ Sync cross-device~~ → Implémenté via points sync (max merge strategy)
 - ❌ Android
 - ❌ RevenueCat (StoreKit 2 natif suffit)

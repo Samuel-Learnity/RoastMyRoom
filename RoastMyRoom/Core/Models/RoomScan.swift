@@ -14,6 +14,9 @@ final class RoomScan {
     var verdict: String = ""
     var createdAt: Date
     var isPremiumResult: Bool
+    var personalityData: Data?
+    var subScoreCommentsData: Data?
+    var moodBoardData: Data?
 
     init(
         id: UUID = UUID(),
@@ -26,7 +29,10 @@ final class RoomScan {
         roast: String,
         verdict: String = "",
         createdAt: Date = Date(),
-        isPremiumResult: Bool = false
+        isPremiumResult: Bool = false,
+        personalityData: Data? = nil,
+        subScoreCommentsData: Data? = nil,
+        moodBoardData: Data? = nil
     ) {
         self.id = id
         self.imageData = imageData
@@ -39,6 +45,9 @@ final class RoomScan {
         self.verdict = verdict
         self.createdAt = createdAt
         self.isPremiumResult = isPremiumResult
+        self.personalityData = personalityData
+        self.subScoreCommentsData = subScoreCommentsData
+        self.moodBoardData = moodBoardData
     }
 
     var subScores: SubScores? {
@@ -51,6 +60,18 @@ final class RoomScan {
 
     var roomStyle: RoomStyle? {
         RoomStyle(rawValue: style)
+    }
+
+    var personalityAnalysis: PersonalityAnalysis? {
+        personalityData.flatMap { decodeModel(PersonalityAnalysis.self, from: $0) }
+    }
+
+    var subScoreCommentsModel: SubScoreComments? {
+        subScoreCommentsData.flatMap { decodeModel(SubScoreComments.self, from: $0) }
+    }
+
+    var moodBoardModel: MoodBoard? {
+        moodBoardData.flatMap { decodeModel(MoodBoard.self, from: $0) }
     }
 }
 
@@ -71,6 +92,14 @@ nonisolated private func encodeTips(_ tips: [Tip]) -> Data {
     (try? JSONEncoder().encode(tips)) ?? Data()
 }
 
+nonisolated private func decodeModel<T: Decodable>(_ type: T.Type, from data: Data) -> T? {
+    try? JSONDecoder().decode(type, from: data)
+}
+
+nonisolated private func encodeModel<T: Encodable>(_ value: T) -> Data? {
+    try? JSONEncoder().encode(value)
+}
+
 extension RoomScan {
     convenience init(from result: ScanResult, imageData: Data) {
         let subScoresData = encodeSubScores(result.subScores)
@@ -84,7 +113,10 @@ extension RoomScan {
             subScoresData: subScoresData,
             tipsData: tipsData,
             roast: result.roast,
-            verdict: result.verdict
+            verdict: result.verdict,
+            personalityData: result.personality.flatMap { encodeModel($0) },
+            subScoreCommentsData: result.subScoreComments.flatMap { encodeModel($0) },
+            moodBoardData: result.moodBoard.flatMap { encodeModel($0) }
         )
     }
 }

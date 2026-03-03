@@ -21,6 +21,8 @@
 		7E0BF9072F4E6B1E00BAFC68 /* _current_branch in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8EC2F4E6B1E00BAFC68 /* _current_branch */; };
 		7E0BF9082F4E6B1E00BAFC68 /* config.toml in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */; };
 		7E0BF90A2F4E6D5E00BAFC68 /* roomscore-prompt-v2.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */; };
+		7E0C6CB92F54917500F570D2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 7EFA00012F5380A000000001 /* FirebaseAnalytics */; };
+		7E0C6D332F5497BD00F570D2 /* TRACKING_PLAN.md in Resources */ = {isa = PBXBuildFile; fileRef = 7E0C6D322F5497BD00F570D2 /* TRACKING_PLAN.md */; };
 		7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC184D02F5124740088CAF9 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +43,7 @@
 		7E0BF8FB2F4E6B1E00BAFC68 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		7E0BF8FC2F4E6B1E00BAFC68 /* config.toml */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.toml; sourceTree = "<group>"; };
 		7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "roomscore-prompt-v2.md"; sourceTree = "<group>"; };
+		7E0C6D322F5497BD00F570D2 /* TRACKING_PLAN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TRACKING_PLAN.md; sourceTree = "<group>"; };
 		7EC184D02F5124740088CAF9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -70,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E0C6CB92F54917500F570D2 /* FirebaseAnalytics in Frameworks */,
 				7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -83,6 +87,7 @@
 				7E0BF8732F4E1B9800BAFC68 /* RoastMyRoom */,
 				7E0BF8722F4E1B9800BAFC68 /* Products */,
 				7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */,
+				7E0C6D322F5497BD00F570D2 /* TRACKING_PLAN.md */,
 				7E0BF8822F4E1C0E00BAFC68 /* SPEC.md */,
 				7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */,
 				7E0BF8FD2F4E6B1E00BAFC68 /* supabase */,
@@ -185,6 +190,7 @@
 			);
 			name = RoastMyRoom;
 			packageProductDependencies = (
+				7EFA00012F5380A000000001 /* FirebaseAnalytics */,
 			);
 			productName = RoastMyRoom;
 			productReference = 7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */;
@@ -217,6 +223,9 @@
 			);
 			mainGroup = 7E0BF8682F4E1B9800BAFC68;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				7EFA00012F5380A000000002 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7E0BF8722F4E1B9800BAFC68 /* Products */;
 			projectDirPath = "";
@@ -239,6 +248,7 @@
 				7E0BF9012F4E6B1E00BAFC68 /* project-ref in Resources */,
 				7E0BF9022F4E6B1E00BAFC68 /* pooler-url in Resources */,
 				7E0BF9032F4E6B1E00BAFC68 /* cli-latest in Resources */,
+				7E0C6D332F5497BD00F570D2 /* TRACKING_PLAN.md in Resources */,
 				7E0BF9042F4E6B1E00BAFC68 /* .gitignore in Resources */,
 				7E0BF9052F4E6B1E00BAFC68 /* rest-version in Resources */,
 				7E0BF9062F4E6B1E00BAFC68 /* storage-version in Resources */,
@@ -388,6 +398,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RoastMyRoom/RoastMyRoom.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
@@ -425,6 +436,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RoastMyRoom/RoastMyRoom.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
@@ -479,6 +491,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7EFA00012F5380A000000002 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7EFA00012F5380A000000001 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7EFA00012F5380A000000002 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7E0BF8692F4E1B9800BAFC68 /* Project object */;
 }

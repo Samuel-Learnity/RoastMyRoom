@@ -1,12 +1,89 @@
 import SwiftUI
 
+// MARK: - Flow Layout
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = arrange(proposal: proposal, subviews: subviews)
+        for (index, position) in result.positions.enumerated() {
+            subviews[index].place(
+                at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y),
+                proposal: .unspecified
+            )
+        }
+    }
+
+    private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (positions: [CGPoint], size: CGSize) {
+        let maxWidth = proposal.width ?? .infinity
+        var positions: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        var totalSize: CGSize = .zero
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > maxWidth, x > 0 {
+                x = 0
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            positions.append(CGPoint(x: x, y: y))
+            rowHeight = max(rowHeight, size.height)
+            x += size.width + spacing
+            totalSize.width = max(totalSize.width, x - spacing)
+            totalSize.height = max(totalSize.height, y + rowHeight)
+        }
+
+        return (positions, totalSize)
+    }
+}
+
 // MARK: - Gradient Background
 
 struct GradientBackground: View {
+    @State private var cachedImage: UIImage? = GradientBackgroundCache.shared.image
+
     var body: some View {
         ZStack {
             Color.rsBgBase
 
+            if let cachedImage {
+                Image(uiImage: cachedImage)
+                    .resizable()
+                    .ignoresSafeArea()
+                    .opacity(0.15)
+            }
+        }
+        .ignoresSafeArea()
+        .task {
+            if cachedImage == nil {
+                let image = await GradientBackgroundCache.shared.render()
+                cachedImage = image
+            }
+        }
+    }
+}
+
+/// Renders the MeshGradient once and caches the result as a UIImage.
+@MainActor
+final class GradientBackgroundCache {
+    static let shared = GradientBackgroundCache()
+    private(set) var image: UIImage?
+
+    func render() async -> UIImage? {
+        if let image { return image }
+
+        // Use a fixed size; the image is resizable and fills any screen
+        let size = CGSize(width: 430, height: 932)
+        let renderer = ImageRenderer(content:
             MeshGradient(
                 width: 3,
                 height: 3,
@@ -21,9 +98,12 @@ struct GradientBackground: View {
                     .aiPurple,     .aiPeach,     .aiDeepPurple
                 ]
             )
-            .opacity(0.15)
-        }
-        .ignoresSafeArea()
+            .frame(width: size.width, height: size.height)
+        )
+        renderer.scale = 1.0
+        let uiImage = renderer.uiImage
+        image = uiImage
+        return uiImage
     }
 }
 
@@ -49,6 +129,37 @@ extension View {
             self.modifier(ShimmerModifier())
         } else {
             self
+        }
+    }
+}
+
+// MARK: - Deferred View
+
+/// Displays a lightweight placeholder on the first frame, then swaps to the real content.
+/// Use this to prevent heavy views (NavigationStack, glass materials) from blocking tab transitions.
+struct DeferredView<Content: View, Placeholder: View>: View {
+    @State private var isReady = false
+    let content: () -> Content
+    let placeholder: () -> Placeholder
+
+    init(
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) {
+        self.content = content
+        self.placeholder = placeholder
+    }
+
+    var body: some View {
+        if isReady {
+            content()
+        } else {
+            placeholder()
+                .onAppear {
+                    DispatchQueue.main.async {
+                        isReady = true
+                    }
+                }
         }
     }
 }
@@ -85,30 +196,20 @@ private struct NeonGlowModifier: ViewModifier {
     let colors: [Color]
     let radius: CGFloat
     let opacity: Double
-    @State private var phase: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
             .background {
-                // Animated gradient glow behind the view
                 Capsule()
                     .fill(
                         LinearGradient(
                             colors: colors,
-                            startPoint: .init(x: phase, y: 0),
-                            endPoint: .init(x: phase + 1, y: 1)
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
                     )
                     .blur(radius: radius)
                     .opacity(opacity)
-                    .onAppear {
-                        withAnimation(
-                            .linear(duration: 3)
-                            .repeatForever(autoreverses: true)
-                        ) {
-                            phase = 1
-                        }
-                    }
             }
     }
 }
@@ -180,6 +281,61 @@ private struct AIGlowModifier: ViewModifier {
                     phase = 1
                 }
             }
+    }
+}
+
+// MARK: - Clear Navigation Controller Background
+
+/// Clears the UIKit navigation controller's background color to prevent
+/// black edges showing during fullScreenCover dismiss gestures.
+struct ClearNavigationControllerBackground: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        Controller()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    private final class Controller: UIViewController {
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            view.backgroundColor = .clear
+            navigationController?.view.backgroundColor = .clear
+        }
+    }
+}
+
+// MARK: - Clear Tab Bar Background
+
+struct ClearTabBarBackground: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        Controller()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+
+    private final class Controller: UIViewController {
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            guard let tabBar = tabBarController?.tabBar else { return }
+            tabBar.backgroundColor = .clear
+            tabBar.barTintColor = .clear
+            tabBar.isTranslucent = true
+            tabBar.backgroundImage = UIImage()
+            tabBar.shadowImage = UIImage()
+            let appearance = UITabBarAppearance()
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundColor = .clear
+            appearance.shadowColor = .clear
+            tabBar.standardAppearance = appearance
+            tabBar.scrollEdgeAppearance = appearance
+            // Clear any opaque background subviews
+            for subview in tabBar.subviews {
+                if String(describing: type(of: subview)).contains("Background") {
+                    subview.backgroundColor = .clear
+                    subview.isHidden = true
+                }
+            }
+        }
     }
 }
 

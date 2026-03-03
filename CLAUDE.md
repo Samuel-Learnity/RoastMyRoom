@@ -35,7 +35,7 @@ Photo → Score /10 → Carte partageable → Boucle virale.
 - **Persistence** : SwiftData
 - **IAP** : StoreKit 2 natif
 - **Backend** : Supabase Edge Functions (Deno/TypeScript)
-- **Packages** : Zéro dépendance externe (zéro SPM package MVP)
+- **Packages** : `firebase-ios-sdk` (FirebaseAnalytics uniquement) via SPM
 
 ---
 
@@ -43,68 +43,15 @@ Photo → Score /10 → Carte partageable → Boucle virale.
 
 MVVM avec injection via `AppFactory` (singleton, composition root).
 
-```
-RoomScore/
-  App/
-    RoomScoreApp.swift              — @main, WindowGroup, lance RootView
-    AppFactory.swift                — DI container singleton, crée services + VMs
-    RootView.swift                  — First launch → Onboarding, sinon TabView
-
-  Core/
-    Models/
-      RoomScan.swift                — @Model SwiftData : scores, style, tips, roast
-      RoomStyle.swift               — Enum styles déco
-      SubScores.swift               — Struct Codable : 5 floats
-      Tip.swift                     — Struct Codable : text + impact
-      ScanResult.swift              — Struct Codable : réponse brute API
-    Services/
-      ScoringService.swift          — Envoie photo, reçoit ScanResult
-      APIClient.swift               — URLSession POST base64 → Edge Function
-      ImageProcessor.swift          — Compress JPEG, resize, validation
-      ShareCardRenderer.swift       — UIGraphicsImageRenderer → UIImage
-      SubscriptionService.swift     — StoreKit 2 wrapper
-      StorageService.swift          — SwiftData CRUD
-    Extensions/
-      Color+Theme.swift             — Couleurs sémantiques (adaptive)
-      View+Extensions.swift         — .glassBackground, .scoreColor, .shimmer
-      Image+Compression.swift       — UIImage resize + compress
-
-  Features/
-    Onboarding/Views|ViewModels
-    Scan/Views|ViewModels|Services/CameraService.swift
-    Analysis/Views|ViewModels
-    Result/Views|ViewModels
-    History/Views|ViewModels
-    Profile/Views|ViewModels
-    Paywall/Views|ViewModels
-
-  Resources/
-    Assets.xcassets
-    Localizable.xcstrings           — EN + FR + DE + ES
-```
+> Arbre de fichiers complet : voir **SPEC.md §2**.
 
 ---
 
 ## Pipeline principal
 
-```
-Geste (Shutter tap / Gallery pick)
-  → ScanViewModel.capturePhoto()
-    → UIImage capturée
-      → Navigation push → AnalysisView
-        → ImageProcessor.prepare(image:)
-            → Resize 1024×768 max, JPEG 0.8, validation
-        → APIClient.post("/score", base64)
-            → Supabase Edge Function (Deno)
-              → OpenAI GPT-4o Vision
-              → JSON structuré
-            → ScanResult (Codable)
-        → StorageService.save(RoomScan)
-        → Navigation replace → ResultView
-          → Score animation (spring 1.2s)
-          → Radar chart (trim 0.8s)
-          → Share → UIActivityViewController
-```
+> Pipeline détaillé : voir **SPEC.md §4**.
+
+Résumé : `Photo → ScanViewModel → AnalysisView → APIClient (GPT-4.1 mini) → ScanResult → StorageService → ResultView`
 
 ---
 
@@ -112,14 +59,14 @@ Geste (Shutter tap / Gallery pick)
 
 ```
 View (SwiftUI, déclarative)
-  ↕ @StateObject / @ObservedObject
-ViewModel (@MainActor, ObservableObject, @Published)
+  ↕ @State var viewModel (Observation framework)
+ViewModel (@MainActor, @Observable)
   → Service (protocole, injecté via init)
     → API / SwiftData / StoreKit / AVFoundation
 ```
 
-- **Views** : Déclaratives, zéro logique métier. Lisent `@Published`.
-- **ViewModels** : `@MainActor final class`, `ObservableObject`. Appellent services.
+- **Views** : Déclaratives, zéro logique métier. `@State var viewModel` pour les VMs.
+- **ViewModels** : `@MainActor @Observable final class`. Appellent services.
 - **Services** : Protocoles + implémentations concrètes. Injectés par `AppFactory`.
 - **Models** : `Codable` structs transport. `@Model` SwiftData persistance.
 
@@ -151,12 +98,17 @@ ViewModel (@MainActor, ObservableObject, @Published)
 - **Listes** : `LazyVStack`/`LazyVGrid` pour contenu, `List` pour Settings
 - **ScrollView** : Toujours masquer les indicateurs de scroll (`ScrollView(showsIndicators: false)` ou `.scrollIndicators(.hidden)`)
 - **Toolbar** : Les boutons dans `.toolbar {}` ont automatiquement un background Liquid Glass. Ne jamais ajouter `.buttonStyle(.glass)` ni de background custom. Utiliser `.buttonStyle(.glassProminent)` uniquement pour les actions principales (ex: Partager).
+- **TabView (MainTabView)** :
+  - Les ViewModels des onglets (History, Profile…) doivent être créés comme `@State` dans `MainTabView` et injectés dans les vues enfants.
+  - Création unique dans `.task` au niveau `MainTabView` avec `modelContext`.
+  - Les vues enfants ne doivent **jamais** créer leur propre ViewModel — seulement appeler les méthodes de rafraîchissement (`.loadScans()`, `.loadStats()`) dans leur `.task`.
+  - Raison : SwiftUI lazy-load les tabs, recréer le VM à chaque switch provoque un délai visible.
 
 ### Concurrency
 
 - `@MainActor` sur tous les ViewModels
 - `.task {}` modifier pour lancer async depuis les Views
-- Services → `async throws`, VM catch → `@Published var error: String?`
+- Services → `async throws`, VM catch → `private(set) var error: String?`
 - Pas de `DispatchQueue` sauf interop UIKit inévitable
 
 ---
@@ -185,14 +137,15 @@ final class ScoringService: ScoringServiceProtocol {
     }
 }
 
-// ✅ ViewModel — @MainActor, ObservableObject
+// ✅ ViewModel — @MainActor, @Observable
 @MainActor
-final class AnalysisViewModel: ObservableObject {
+@Observable
+final class AnalysisViewModel {
     enum State: Equatable {
         case idle, analyzing, success(RoomScan), error(String)
     }
 
-    @Published private(set) var state: State = .idle
+    private(set) var state: State = .idle
     private let scoringService: ScoringServiceProtocol
     private let storageService: StorageServiceProtocol
 
@@ -216,7 +169,7 @@ final class AnalysisViewModel: ObservableObject {
 
 // ✅ View — Déclarative, sous-vues extraites
 struct ResultView: View {
-    @ObservedObject var viewModel: ResultViewModel
+    @State var viewModel: ResultViewModel
 
     var body: some View {
         ScrollView {
@@ -264,8 +217,8 @@ var cancellables = Set<AnyCancellable>()
 // ❌ Singleton service
 static let shared = APIClient()  // Injecter via init
 
-// ❌ @EnvironmentObject pour les VMs
-// Utiliser @StateObject + injection explicite
+// ❌ ObservableObject / @Published / @StateObject
+// Utiliser @Observable + @State (Observation framework)
 
 // ❌ NavigationView
 NavigationView { }  // NavigationStack
@@ -285,7 +238,7 @@ Text("Score")  // Text(String(localized: "score_label"))
 
 ```swift
 import Testing
-@testable import RoomScore
+@testable import RoastMyRoom
 
 @Test func scoringServiceDecodesValidJSON() async throws {
     let service = ScoringService(apiClient: MockAPIClient(responseFixture: "valid_score"))
@@ -367,39 +320,59 @@ import Testing
 
 ## Ordre d'implémentation
 
-```
-Phase 1 — Fondations
-  1. Setup Xcode, structure dossiers, AppFactory
-  2. Core/Models (RoomScan, SubScores, Tip, RoomStyle, ScanResult)
-  3. Core/Extensions (Color+Theme, View+Extensions, Image+Compression)
-  4. Scan — CameraService + ScanView + ScanViewModel
-  5. RootView + TabView 3 onglets
-  6. Onboarding — OnboardingView (3 slides, AppStorage)
+> Phases 1-3 terminées. Voir **SPEC.md** pour le détail des screens et fonctionnalités.
 
-Phase 2 — IA & Résultat
-  7. APIClient + ImageProcessor
-  8. ScoringService (appel API, parsing JSON)
-  9. Supabase Edge Function /score
-  10. AnalysisView + AnalysisViewModel (loading animé)
-  11. ResultView complet (score, badge, roast, sous-scores, tips)
-  12. Animations (score counter, radar chart)
-  13. ShareCardRenderer + UIActivityViewController
+Phase 4 restante — Polish :
+- Haptics ✅
+- Localisation EN + FR + DE + ES ✅
+- Tests unitaires
+- QA + App Store prep
 
-Phase 3 — Monétisation & Persistence
-  14. StorageService (SwiftData)
-  15. HistoryView + HistoryViewModel
-  16. SubscriptionService (StoreKit 2)
-  17. PaywallView + PaywallViewModel
-  18. Intégration paywall dans ResultView (blur, triggers)
-  19. ProfileView + stats + settings
+---
 
-Phase 4 — Polish
-  20. Haptics
-  21. Notifications (permission + scheduled)
-  22. Localisation FR + EN
-  23. Tests unitaires
-  24. QA + App Store prep
-```
+## Keychain (Anti-Abus)
+
+- **Service** : `KeychainService` (protocole `KeychainServiceProtocol`)
+- **Framework** : `Security.framework` (pas de SPM)
+- **Clés stockées** :
+  - `pointsBalance` — Solde de points (Int)
+  - `pointsBalanceInitialized` — Flag premier lancement (Bool)
+  - `dailyScanCount` — Compteur scans quotidiens (Int)
+  - `lastScanDate` — Date du dernier scan (Date)
+  - `hasSeenOnboarding` — Onboarding terminé (Bool, écrit aussi dans AppStorage pour SwiftUI)
+- **Migration** : Au premier lancement post-migration, les valeurs UserDefaults sont copiées dans Keychain puis supprimées de UserDefaults
+- **Persistance** : Les données Keychain survivent à une désinstallation/réinstallation → anti-abus
+- **Accessibility** : `kSecAttrAccessibleAfterFirstUnlock` pour accès en background
+
+---
+
+## Auth (Sign in with Apple)
+
+- **Service** : `AuthService` (protocole `AuthServiceProtocol`)
+- **Model** : `AuthSession` (Codable — accessToken, refreshToken, userId, expiresAt)
+- **Flow** :
+  1. `ASAuthorizationAppleIDProvider` → identityToken (JWT Apple)
+  2. POST Supabase Auth : `/auth/v1/token?grant_type=id_token`
+  3. Stockage session en Keychain (accessToken, refreshToken, userId, email)
+  4. Refresh automatique si token expiré (5 min avant expiration)
+- **Clés Keychain** : `auth_access_token`, `auth_refresh_token`, `auth_user_id`, `auth_expires_at`, `auth_user_email`
+- **Sync points** : Après connexion, `max(local, remote)` merge strategy
+- **Entitlement** : `com.apple.developer.applesignin` dans `.entitlements`
+- **Auth PAS obligatoire** : Les achats fonctionnent sans auth. L'auth ajoute la sync cross-device.
+- **Prérequis Supabase** : Provider Apple activé + table `user_points` (voir plan d'implémentation)
+
+---
+
+## Analytics (Firebase)
+
+- **Plan de marquage** : voir `TRACKING_PLAN.md`
+- **Service** : `AnalyticsService` (protocole `AnalyticsServiceProtocol`)
+- **Événements typés** : `AnalyticsEvent` (factory methods statiques)
+- **Règle** : Toute nouvelle feature visible par l'utilisateur DOIT avoir ses événements de tracking ajoutés dans le ViewModel correspondant ET documentés dans `TRACKING_PLAN.md`
+- **Convention** : `snake_case` pour les noms d'événements, paramètres en `snake_case`
+- **Tracking dans les ViewModels** — les Views appellent les méthodes de tracking du ViewModel, sauf `screen_view` qui est tracké via `.onAppear` directement
+- **Firebase config** : `GoogleService-Info.plist` requis dans le target. Sans ce fichier, Firebase est désactivé et un log console s'affiche en debug.
+- **SPM** : `firebase-ios-sdk` — uniquement `FirebaseAnalytics`
 
 ---
 

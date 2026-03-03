@@ -5,55 +5,76 @@ struct PlanCardView: View {
     let product: Product
     let isSelected: Bool
     let isBestValue: Bool
+    var isActive: Bool = false
 
     var body: some View {
-        VStack(spacing: 4) {
-            // Badge — always reserves space, invisible when not best value
-            Text(String(localized: "paywall_best_value"))
-                .font(.system(size: 11, weight: .bold))
+        VStack(spacing: 0) {
+            Text(product.displayName)
+                .font(.headline)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.rsAccent, in: Capsule())
-                .opacity(isBestValue ? 1 : 0)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .frame(height: 20, alignment: .center)
 
-            VStack(spacing: 4) {
-                Text(product.displayName)
-                    .font(.headline)
-                    .foregroundStyle(.white)
+            Spacer(minLength: 8)
 
-                Text(product.displayPrice)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.white)
+            Text(product.displayPrice)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .frame(minHeight: 28, alignment: .center)
 
-                if let subscription = product.subscription {
+            Spacer(minLength: 8)
 
-                    if let intro = subscription.introductoryOffer,
-                       intro.paymentMode == .freeTrial {
-                        Text(trialLabel(intro.period))
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(Color.rsAccent)
-                    }
+            Group {
+                if let subscription = product.subscription,
+                   let intro = subscription.introductoryOffer,
+                   intro.paymentMode == .freeTrial {
+                    Text(trialLabel(intro.period))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.rsAccent)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.8)
+                } else {
+                    Color.clear
                 }
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 12)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(isSelected ? Color.rsAccent.opacity(0.15) : Color.white.opacity(0.08))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(isSelected ? Color.rsAccent : Color.rsCardStroke, lineWidth: isSelected ? 2 : 1)
-            )
-            .scaleEffect(isSelected ? 1.05 : 1.0)
-            .animation(.spring(duration: 0.3), value: isSelected)
-            
-            Spacer()
+            .frame(height: 32, alignment: .center)
         }
+        .padding(.vertical, 16)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(isSelected ? Color.rsAccent.opacity(0.15) : Color.white.opacity(0.08))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .strokeBorder(isSelected ? Color.rsAccent : Color.rsCardStroke, lineWidth: isSelected ? 2 : 1)
+        )
+        .overlay(alignment: .top) {
+            if isActive {
+                Text(String(localized: "paywall_active"))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.aiLightBlue, in: Capsule())
+                    .offset(y: -12)
+            } else if isBestValue {
+                Text(String(localized: "paywall_best_value"))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.rsAccent, in: Capsule())
+                    .offset(y: -12)
+            }
+        }
+        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .animation(.spring(duration: 0.3), value: isSelected)
     }
 
 

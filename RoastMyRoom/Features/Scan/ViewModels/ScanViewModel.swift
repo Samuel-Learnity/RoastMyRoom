@@ -37,10 +37,12 @@ final class ScanViewModel {
     private var photoCaptureDelegate: PhotoCaptureDelegate?
     private var currentInput: AVCaptureDeviceInput?
     private var isSessionConfigured = false
+    private let analyticsService: AnalyticsServiceProtocol
 
     // MARK: - Init
 
-    init() {
+    init(analyticsService: AnalyticsServiceProtocol = AnalyticsService()) {
+        self.analyticsService = analyticsService
         checkCameraPermission()
     }
 
@@ -60,6 +62,7 @@ final class ScanViewModel {
     func requestCameraPermission() async {
         let granted = await AVCaptureDevice.requestAccess(for: .video)
         cameraPermission = granted ? .authorized : .denied
+        analyticsService.track(.cameraPermissionResult(granted: granted))
     }
 
     // MARK: - Session Management
@@ -156,6 +159,7 @@ final class ScanViewModel {
         }
         photoCaptureDelegate = delegate
         photoOutput.capturePhoto(with: settings, delegate: delegate)
+        analyticsService.track(.scanPhotoCaptured(source: "camera"))
 
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -182,6 +186,8 @@ final class ScanViewModel {
             }
         }
 
+        analyticsService.track(.scanLensSwitched(lens: availableLenses[index].label))
+
         let generator = UIImpactFeedbackGenerator(style: .light)
         generator.impactOccurred()
     }
@@ -195,6 +201,7 @@ final class ScanViewModel {
         case .off: flashMode = .auto
         @unknown default: flashMode = .auto
         }
+        analyticsService.track(.scanFlashChanged(mode: flashIcon))
     }
 
     var flashIcon: String {
@@ -210,6 +217,9 @@ final class ScanViewModel {
 
     func handlePickedImage(_ image: UIImage?) {
         capturedImage = image
+        if image != nil {
+            analyticsService.track(.scanPhotoCaptured(source: "gallery"))
+        }
     }
 }
 

@@ -2,12 +2,19 @@
   "permissions": {
     "allow": [
       "mcp__xcodebuildmcp__*",
+      "mcp__XcodeBuildMCP__*",
       "Read",
       "Write",
       "Edit",
       "Bash(git*)",
       "Bash(swift*)",
-      "Bash(xcodebuild*)"
+      "Bash(xcodebuild*)",
+      "Bash(xcrun simctl:*)",
+      "Bash(xcrun devicectl:*)",
+      "Bash(xcrun assetutil:*)",
+      "Bash(plutil:*)",
+      "Bash(gh *)",
+      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/ibtool:*)"
     ]
   }
 }

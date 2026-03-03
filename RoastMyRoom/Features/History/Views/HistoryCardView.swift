@@ -5,9 +5,18 @@ struct HistoryCardView: View {
     let isLocked: Bool
     @State private var thumbnail: UIImage?
 
+    private var glowColors: [Color] {
+        switch scan.overallScore {
+        case 0..<4: [Color.aiCoral, Color.aiPeach, Color.aiPink]
+        case 4..<6: [Color.aiPeach, Color.aiCoral, Color.aiLavender]
+        case 6..<8: [Color.aiLightBlue, Color.aiPurple, Color.aiLavender]
+        default:    [Color.aiPurple, Color.aiPink, Color.aiLightBlue]
+        }
+    }
+
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            // Fixed aspect ratio container — guarantees uniform card size
+        ZStack(alignment: .bottomLeading) {
+            // Fixed aspect ratio container
             Color.clear
                 .aspectRatio(4/3, contentMode: .fit)
                 .background {
@@ -24,28 +33,28 @@ struct HistoryCardView: View {
 
             // Gradient overlay
             LinearGradient(
-                colors: [.clear, .black.opacity(0.6)],
+                colors: [.clear, .black.opacity(0.7)],
                 startPoint: .center,
                 endPoint: .bottom
             )
             .clipShape(RoundedRectangle(cornerRadius: 20))
 
-            // Score badge with glass pill
-            VStack(alignment: .trailing, spacing: 2) {
+            // Score + verdict bottom-left
+            HStack(spacing: 6) {
                 Text(String(format: "%.1f", scan.overallScore))
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
                 if !scan.verdict.isEmpty {
-                    Text(scan.verdict.uppercased())
-                        .font(.system(size: 9, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Color.scoreColor(for: scan.overallScore))
+                    Text(scan.verdict)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.7))
+                        .lineLimit(1)
                 }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
-            .padding(10)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .neonGlow(colors: glowColors, radius: 8, opacity: 0.5)
 
             // Lock overlay for free users
             if isLocked {

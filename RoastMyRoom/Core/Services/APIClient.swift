@@ -33,7 +33,7 @@ protocol APIClientProtocol: Sendable {
     func post(_ endpoint: String, body: Data) async throws -> Data
 }
 
-final class APIClient: APIClientProtocol {
+final class APIClient: APIClientProtocol, @unchecked Sendable {
     private let baseURL: String
     private let apiKey: String
     private let session: URLSession
@@ -55,8 +55,8 @@ final class APIClient: APIClientProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue(apiKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
         let base64 = body.base64EncodedString()
         let language = Bundle.main.preferredLocalizations.first ?? "en"

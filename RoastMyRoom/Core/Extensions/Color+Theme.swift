@@ -9,7 +9,7 @@ extension Color {
 
     // MARK: - Background Base
 
-    static let rsBgBase = Color(red: 0.04, green: 0.03, blue: 0.09) // #0A0817
+    static let rsBgBase = Color("BackgroundColor")
 
     // MARK: - Glass Card
 
@@ -29,6 +29,20 @@ extension Color {
         .aiPurple, .aiPink, .aiLightBlue, .aiDeepPurple,
         .aiCoral, .aiPeach, .aiLavender, .aiPurple
     ]
+
+    // MARK: - Hex Init
+
+    init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        if hexSanitized.hasPrefix("#") { hexSanitized.removeFirst() }
+        guard hexSanitized.count == 6,
+              let rgb = UInt64(hexSanitized, radix: 16) else { return nil }
+        self.init(
+            red: Double((rgb >> 16) & 0xFF) / 255,
+            green: Double((rgb >> 8) & 0xFF) / 255,
+            blue: Double(rgb & 0xFF) / 255
+        )
+    }
 
     // MARK: - Score
 

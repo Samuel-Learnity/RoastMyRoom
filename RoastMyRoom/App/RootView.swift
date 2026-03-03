@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import AppTrackingTransparency
 
 // MARK: - Camera Accessory State
 
@@ -33,12 +34,57 @@ final class CameraAccessoryState {
 
 struct RootView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @AppStorage("hasRespondedToATT") private var hasRespondedToATT = false
+    @State private var launchReveal = false
 
     var body: some View {
-        if hasSeenOnboarding {
-            MainTabView()
-        } else {
-            OnboardingView()
+        Group {
+            if !hasRespondedToATT {
+                ATTPrePromptView()
+            } else if !hasSeenOnboarding {
+                OnboardingView()
+            } else {
+                MainTabView()
+            }
+        }
+        .overlay { launchBlurOverlay }
+        .task {
+            try? await Task.sleep(for: .milliseconds(600))
+            withAnimation(.easeOut(duration: 0.6)) {
+                launchReveal = true
+            }
+        }
+    }
+
+    private var launchBlurOverlay: some View {
+        ZStack {
+            Color.rsBgBase
+            Color.rsAccent.opacity(0.15)
+        }
+        .ignoresSafeArea()
+        .scaleEffect(launchReveal ? 30 : 1)
+        .opacity(launchReveal ? 0 : 1)
+        .allowsHitTesting(!launchReveal)
+    }
+
+    init() {
+        let keychain = AppFactory.shared.keychainService
+
+        // Auto-skip ATT pre-prompt for existing users who already responded to ATT
+        // Must run BEFORE Keychain migration so we detect returning users correctly
+        let keychainHasOnboarding = keychain.getBool(forKey: "hasSeenOnboarding") == true
+        if keychainHasOnboarding,
+           !UserDefaults.standard.bool(forKey: "hasRespondedToATT") {
+            let attStatus = ATTrackingManager.trackingAuthorizationStatus
+            if attStatus != .notDetermined {
+                UserDefaults.standard.set(true, forKey: "hasRespondedToATT")
+            }
+        }
+
+        // Migrate hasSeenOnboarding from Keychain → AppStorage if needed
+        if keychainHasOnboarding,
+           !UserDefaults.standard.bool(forKey: "hasSeenOnboarding") {
+            UserDefaults.standard.set(true, forKey: "hasSeenOnboarding")
         }
     }
 }
@@ -46,14 +92,26 @@ struct RootView: View {
 // MARK: - Main Tab View
 
 struct MainTabView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedTab = 0
     @State private var showScanLimitPaywall = false
     @State private var cameraAccessory = CameraAccessoryState()
-    @State private var scanViewModel = ScanViewModel()
+    @State private var scanViewModel = AppFactory.shared.makeScanViewModel()
+    @State private var historyViewModel: HistoryViewModel?
+    @State private var profileViewModel: ProfileViewModel?
     private let subscriptionService = AppFactory.shared.subscriptionService
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            Tab(String(localized: "history_tab"), systemImage: "clock.arrow.circlepath", value: 1) {
+                HistoryView(
+                    viewModel: historyViewModel,
+                    isPremium: subscriptionService.isPremium,
+                    subscriptionService: subscriptionService,
+                    onShowPaywall: { showScanLimitPaywall = true }
+                )
+            }
+
             Tab(String(localized: "scan_tab"), systemImage: "camera.viewfinder", value: 0) {
                 ScanView(
                     viewModel: scanViewModel,
@@ -62,18 +120,31 @@ struct MainTabView: View {
                 )
             }
 
-            Tab(String(localized: "history_tab"), systemImage: "clock.arrow.circlepath", value: 1) {
-                HistoryView(
-                    isPremium: subscriptionService.isPremium,
-                    subscriptionService: subscriptionService,
-                    onShowPaywall: { showScanLimitPaywall = true }
-                )
-            }
-
             Tab(String(localized: "profile_tab"), systemImage: "person.crop.circle", value: 2) {
-                ProfileView()
+                ProfileView(viewModel: profileViewModel)
             }
         }
+        .task {
+            // Pre-render gradient background so tab switches are instant
+            _ = await GradientBackgroundCache.shared.render()
+
+            if historyViewModel == nil {
+                let hvm = AppFactory.shared.makeHistoryViewModel(modelContext: modelContext)
+                historyViewModel = hvm
+                await hvm.loadScans()
+            }
+            if profileViewModel == nil {
+                let pvm = AppFactory.shared.makeProfileViewModel(modelContext: modelContext)
+                profileViewModel = pvm
+                await pvm.loadStats()
+            }
+        }
+        .onChange(of: selectedTab) { _, newTab in
+            let tabNames: [Int: String] = [0: "scan", 1: "history", 2: "profile"]
+            let tabName = tabNames[newTab] ?? "unknown"
+            AppFactory.shared.analyticsService.track(.tabSwitched(tab: tabName))
+        }
+        .tabViewStyle(.tabBarOnly)
         .tabBarMinimizeBehavior(.onScrollDown)
         .tabViewBottomAccessory(isEnabled: selectedTab == 0) {
             CameraAccessoryBar(state: cameraAccessory)

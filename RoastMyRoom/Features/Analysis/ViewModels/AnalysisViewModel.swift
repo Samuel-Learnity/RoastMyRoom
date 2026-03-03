@@ -7,18 +7,19 @@ import Observation
 final class AnalysisViewModel {
     enum State: Equatable {
         case analyzing
-        case success(ScanResult)
+        case success(ScanResult, RoomScan?)
         case error(String)
     }
 
     private(set) var state: State = .analyzing
     private(set) var currentStepIndex = 0
-    private(set) var analysisPercent: Int = 0
     private var hasStartedAnalysis = false
 
     let image: UIImage
+    private(set) var displayImage: UIImage
     private let scoringService: ScoringServiceProtocol
     private let storageService: StorageServiceProtocol
+    private let analyticsService: AnalyticsServiceProtocol
 
     let steps: [String] = [
         String(localized: "analysis_step_neural"),
@@ -27,15 +28,24 @@ final class AnalysisViewModel {
         String(localized: "analysis_step_scoring")
     ]
 
-    init(image: UIImage, scoringService: ScoringServiceProtocol, storageService: StorageServiceProtocol) {
+    init(image: UIImage, scoringService: ScoringServiceProtocol, storageService: StorageServiceProtocol, analyticsService: AnalyticsServiceProtocol = AnalyticsService()) {
         self.image = image
+        self.displayImage = image
         self.scoringService = scoringService
         self.storageService = storageService
+        self.analyticsService = analyticsService
     }
 
     func analyze(modelContext: ModelContext) async {
         guard !hasStartedAnalysis else { return }
         hasStartedAnalysis = true
+        analyticsService.track(.analysisStarted())
+
+        // Downscale for display/storage (original kept for API)
+        let original = image
+        displayImage = await Task.detached {
+            original.resized(maxWidth: 1280, maxHeight: 960)
+        }.value
 
         let startTime = ContinuousClock.now
 
@@ -53,16 +63,6 @@ final class AnalysisViewModel {
             }
         }
 
-        // Goal Gradient: percentage accelerates toward the end
-        let percentTask = Task {
-            for i in 1...95 {
-                let progress = Double(i) / 95.0
-                let delay = 26.0 - (progress * 8.0) // 26ms early → 18ms late
-                try await Task.sleep(for: .milliseconds(Int(delay)))
-                analysisPercent = i
-            }
-        }
-
         // Call API
         do {
             let result = try await scoringService.scoreRoom(image: image)
@@ -75,8 +75,7 @@ final class AnalysisViewModel {
             }
 
             stepTask.cancel()
-            percentTask.cancel()
-            analysisPercent = 100
+            currentStepIndex = steps.count - 1
 
             // Peak-End Rule: spectacular completion haptic burst
             UINotificationFeedbackGenerator().notificationOccurred(.success)
@@ -84,20 +83,32 @@ final class AnalysisViewModel {
             UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
             // Auto-save to SwiftData (compress off main thread)
-            let capturedImage = image
+            let downscaled = displayImage
             let imageData = await Task.detached {
-                capturedImage.jpegData(compressionQuality: 0.8)
+                downscaled.jpegData(compressionQuality: 0.8)
             }.value
+            var savedScan: RoomScan?
             if let imageData {
                 let scan = RoomScan(from: result, imageData: imageData)
                 storageService.save(scan, in: modelContext)
+                savedScan = scan
             }
 
-            state = .success(result)
+            // Brief pause to let user see the completed state
+            try? await Task.sleep(for: .milliseconds(600))
+
+            let durationMs = Int((ContinuousClock.now - startTime).components.seconds * 1000)
+            analyticsService.track(.analysisSuccess(
+                score: Double(result.overallScore),
+                style: result.style,
+                durationMs: durationMs
+            ))
+
+            state = .success(result, savedScan)
         } catch {
             stepTask.cancel()
-            percentTask.cancel()
             print("[AnalysisVM] Analysis failed: \(error)")
+            analyticsService.track(.analysisError(error: error.localizedDescription))
             state = .error(error.localizedDescription)
         }
     }

@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --color-bg-base: #0A0A1A;
+  --color-bg-card: rgba(255, 255, 255, 0.05);
+  --color-border-glass: rgba(255, 255, 255, 0.1);
+  --color-ai-purple: #BC82F3;
+  --color-ai-deep-purple: #AA6EEE;
+  --color-ai-pink: #F5B9EA;
+  --color-ai-light-blue: #8D9FFF;
+  --color-ai-coral: #FF6778;
+  --color-ai-peach: #FFBA71;
+  --color-foreground: #ededed;
+  --color-muted: #a1a1aa;
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.glass-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-ai-purple), var(--color-ai-pink), var(--color-ai-light-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-ai-purple), var(--color-ai-pink), var(--color-ai-light-blue));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}

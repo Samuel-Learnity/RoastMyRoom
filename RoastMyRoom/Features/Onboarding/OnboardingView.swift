@@ -1,9 +1,11 @@
 import SwiftUI
 import AVFoundation
+import StoreKit
 
 struct OnboardingView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var currentPage = 0
+    @State private var isRestoring = false
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -28,8 +30,28 @@ struct OnboardingView: View {
                     subtitle: String(localized: "onboarding_subtitle_3")
                 )
                 .overlay(alignment: .bottom) {
-                    ctaButton
-                        .padding(.bottom, 80)
+                    VStack(spacing: 12) {
+                        ctaButton
+
+                        Button {
+                            Task {
+                                isRestoring = true
+                                try? await AppStore.sync()
+                                isRestoring = false
+                            }
+                        } label: {
+                            if isRestoring {
+                                ProgressView()
+                                    .tint(.white.opacity(0.5))
+                            } else {
+                                Text(String(localized: "paywall_restore"))
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.4))
+                            }
+                        }
+                        .disabled(isRestoring)
+                    }
+                    .padding(.bottom, 80)
                 }
                 .tag(2)
             }
@@ -87,7 +109,7 @@ struct OnboardingView: View {
 
     private var skipButton: some View {
         Button {
-            hasSeenOnboarding = true
+            requestCameraAndFinish()
         } label: {
             Text(String(localized: "onboarding_skip"))
                 .font(.caption)
@@ -99,8 +121,12 @@ struct OnboardingView: View {
     // MARK: - Actions
 
     private func requestCameraAndFinish() {
-        AVCaptureDevice.requestAccess(for: .video) { _ in
+        AVCaptureDevice.requestAccess(for: .video) { granted in
             Task { @MainActor in
+                AppFactory.shared.analyticsService.track(.cameraPermissionResult(granted: granted))
+                AppFactory.shared.analyticsService.track(.onboardingCompleted())
+                // Write to both Keychain (survives reinstall) and AppStorage (SwiftUI binding)
+                AppFactory.shared.keychainService.set(true, forKey: "hasSeenOnboarding")
                 hasSeenOnboarding = true
             }
         }

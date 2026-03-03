@@ -6,20 +6,23 @@ import Observation
 @Observable
 final class HistoryViewModel {
     private(set) var scans: [RoomScan] = []
-    private(set) var isLoading = false
+    private(set) var isLoading = true
     var scanToDelete: RoomScan?
     var showDeleteConfirmation = false
 
     private let storageService: StorageServiceProtocol
     private let modelContext: ModelContext
+    private let analyticsService: AnalyticsServiceProtocol
 
-    init(storageService: StorageServiceProtocol, modelContext: ModelContext) {
+    init(storageService: StorageServiceProtocol, modelContext: ModelContext, analyticsService: AnalyticsServiceProtocol = AnalyticsService()) {
         self.storageService = storageService
         self.modelContext = modelContext
+        self.analyticsService = analyticsService
     }
 
-    func loadScans() {
-        scans = storageService.fetchAll(in: modelContext)
+    func loadScans() async {
+        try? await Task.sleep(for: .milliseconds(80))
+        refreshScans()
         isLoading = false
     }
 
@@ -30,9 +33,18 @@ final class HistoryViewModel {
 
     func deleteConfirmed() {
         guard let scan = scanToDelete else { return }
+        analyticsService.track(.historyDeleteConfirmed(score: Double(scan.overallScore)))
         storageService.delete(scan, in: modelContext)
         scanToDelete = nil
-        loadScans()
+        refreshScans()
+    }
+
+    func trackCardTapped(_ scan: RoomScan) {
+        analyticsService.track(.historyCardTapped(score: Double(scan.overallScore), style: scan.style))
+    }
+
+    func refreshScans() {
+        scans = storageService.fetchAll(in: modelContext)
     }
 
     // MARK: - Sections
