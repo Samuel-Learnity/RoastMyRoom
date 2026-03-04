@@ -124,6 +124,7 @@ struct HistoryView: View {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 48))
                 .foregroundStyle(.white.opacity(0.5))
+                .accessibilityHidden(true)
 
             Text(String(localized: "history_empty_title"))
                 .font(.title3)
@@ -245,6 +246,7 @@ private struct HistorySkeletonCard: View {
                 .padding(12)
         }
         .shimmer(isActive: true)
+        .accessibilityHidden(true)
     }
 }
 

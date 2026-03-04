@@ -60,7 +60,9 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
 
         let base64 = body.base64EncodedString()
         let language = Bundle.main.preferredLocalizations.first ?? "en"
+        #if DEBUG
         print("[APIClient] Language sent: \(language)")
+        #endif
         let payload = try JSONSerialization.data(
             withJSONObject: ["image": base64, "language": language]
         )
@@ -72,29 +74,41 @@ final class APIClient: APIClientProtocol, @unchecked Sendable {
         do {
             (data, response) = try await session.data(for: request)
         } catch let error as URLError where error.code == .timedOut {
+            #if DEBUG
             print("[APIClient] ⏱ Timeout for \(endpoint)")
+            #endif
             throw APIError.timeout
         } catch {
+            #if DEBUG
             print("[APIClient] ❌ Network error for \(endpoint): \(error)")
+            #endif
             throw APIError.networkError(error)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
+            #if DEBUG
             print("[APIClient] ❌ Invalid response (not HTTP) for \(endpoint)")
+            #endif
             throw APIError.invalidResponse
         }
 
+        #if DEBUG
         print("[APIClient] \(endpoint) → HTTP \(httpResponse.statusCode)")
+        #endif
 
         switch httpResponse.statusCode {
         case 200...299:
             return data
         case 429:
+            #if DEBUG
             print("[APIClient] ⚠️ Rate limited")
+            #endif
             throw APIError.rateLimited
         default:
+            #if DEBUG
             let body = String(data: data, encoding: .utf8) ?? "(no body)"
             print("[APIClient] ❌ Server error \(httpResponse.statusCode): \(body)")
+            #endif
             throw APIError.serverError(httpResponse.statusCode)
         }
     }

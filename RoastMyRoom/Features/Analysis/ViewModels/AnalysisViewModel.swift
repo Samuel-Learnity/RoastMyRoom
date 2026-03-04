@@ -107,7 +107,9 @@ final class AnalysisViewModel {
             state = .success(result, savedScan)
         } catch {
             stepTask.cancel()
+            #if DEBUG
             print("[AnalysisVM] Analysis failed: \(error)")
+            #endif
             analyticsService.track(.analysisError(error: error.localizedDescription))
             state = .error(error.localizedDescription)
         }

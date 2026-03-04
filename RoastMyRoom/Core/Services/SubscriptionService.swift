@@ -430,7 +430,9 @@ final class SubscriptionService: SubscriptionServiceProtocol {
                 balance: mergedBalance
             )
         } catch {
+            #if DEBUG
             print("[SubscriptionService] ⚠️ Points sync failed: \(error)")
+            #endif
         }
     }
 
@@ -480,7 +482,9 @@ final class SubscriptionService: SubscriptionServiceProtocol {
 
         let (_, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            #if DEBUG
             print("[SubscriptionService] ⚠️ Remote points upsert failed: HTTP \(http.statusCode)")
+            #endif
         }
     }
 

@@ -71,6 +71,10 @@ struct HistoryCardView: View {
             RoundedRectangle(cornerRadius: 20)
                 .stroke(Color.rsCardStroke, lineWidth: 1)
         )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(isLocked
+            ? String(localized: "accessibility_locked_scan")
+            : "\(String(format: "%.1f", scan.overallScore)) /10, \(scan.verdict)")
         .task(id: scan.id) {
             guard thumbnail == nil else { return }
             let data = scan.imageData

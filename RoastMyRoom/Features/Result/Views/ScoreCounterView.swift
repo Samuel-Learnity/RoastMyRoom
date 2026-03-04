@@ -89,6 +89,8 @@ struct ScoreCounterView: View {
                     .opacity(showVerdict ? 1 : 0)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(String(format: "%.1f", score)) /10, \(verdict)")
         .onAppear {
             guard !hasAnimated else { return }
             hasAnimated = true

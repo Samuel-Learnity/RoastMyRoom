@@ -35,9 +35,11 @@ final class KeychainService: KeychainServiceProtocol {
         ]
 
         let status = SecItemAdd(query as CFDictionary, nil)
+        #if DEBUG
         if status != errSecSuccess {
             print("[Keychain] ⚠️ Failed to set \(key): \(status)")
         }
+        #endif
     }
 
     func get(forKey key: String) -> String? {

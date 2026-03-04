@@ -55,6 +55,7 @@ struct PaywallView: View {
                             .font(.footnote.weight(.semibold))
                             .foregroundStyle(.white.opacity(0.6))
                     }
+                    .accessibilityLabel(String(localized: "accessibility_close"))
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -151,6 +152,7 @@ struct PaywallView: View {
                 GradientBackground()
             }
         }
+        .accessibilityHidden(true)
     }
 
     // MARK: - Header

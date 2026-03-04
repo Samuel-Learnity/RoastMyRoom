@@ -176,9 +176,10 @@ private struct CameraAccessoryBar: View {
             ) {
                 Image(systemName: "photo.on.rectangle")
                     .font(.title3)
-                    .foregroundStyle(.white) // TODO: attention quand on est en light theme -> non visible blanc sur blanc. Corrige et supprime le todo quand tu le liras
+                    .foregroundStyle(.primary)
                     .frame(width: 44, height: 44)
             }
+            .accessibilityLabel(String(localized: "accessibility_photo_library"))
             .onChange(of: state.selectedPhotoItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
@@ -195,13 +196,14 @@ private struct CameraAccessoryBar: View {
             } label: {
                 ZStack {
                     Circle()
-                        .stroke(.white, lineWidth: 2.5) // TODO: attention quand on est en light theme -> non visible blanc sur blanc. Corrige et supprime le todo quand tu le liras
+                        .stroke(.primary, lineWidth: 2.5)
                         .frame(width: 38, height: 38)
                     Circle()
-                        .fill(.white) // TODO: attention quand on est en light theme -> non visible blanc sur blanc. Corrige et supprime le todo quand tu le liras
+                        .fill(.primary)
                         .frame(width: 32, height: 32)
                 }
             }
+            .accessibilityLabel(String(localized: "accessibility_take_photo"))
             
             if state.availableLenses.count > 1 {
                 lensPicker

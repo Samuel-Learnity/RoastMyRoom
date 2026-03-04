@@ -34,6 +34,7 @@ struct ResultView: View {
                 } label: {
                     Image(systemName: "xmark")
                 }
+                .accessibilityLabel(String(localized: "accessibility_close"))
             }
 
             ToolbarItemGroup(placement: .topBarTrailing) {

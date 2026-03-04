@@ -150,7 +150,9 @@ final class AuthService: AuthServiceProtocol {
 
         guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
             let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            #if DEBUG
             print("[AuthService] ❌ Supabase auth failed: \(errorBody)")
+            #endif
             throw AuthError.supabaseAuthFailed(errorBody)
         }
 
@@ -188,9 +190,13 @@ final class AuthService: AuthServiceProtocol {
         do {
             let session = try await refreshAccessToken(refreshToken: currentRefreshToken)
             saveSession(session, email: nil)
+            #if DEBUG
             print("[AuthService] ✅ Token refreshed")
+            #endif
         } catch {
+            #if DEBUG
             print("[AuthService] ⚠️ Refresh failed, clearing session: \(error)")
+            #endif
             clearSession()
         }
     }

@@ -19,32 +19,45 @@ final class ScoringService: ScoringServiceProtocol {
         let compressed = try await Task.detached {
             try processor.prepare(image)
         }.value
+        #if DEBUG
         print("[ScoringService] Image compressed: \(compressed.count) bytes (\(compressed.count / 1024)KB)")
+        #endif
 
         let data = try await apiClient.post("/score", body: compressed)
+        #if DEBUG
         print("[ScoringService] Response received: \(data.count) bytes")
-
         if let rawJSON = String(data: data, encoding: .utf8) {
             print("[ScoringService] Raw response: \(rawJSON.prefix(500))")
         }
+        #endif
 
         do {
             let result = try JSONDecoder().decode(ScanResult.self, from: data)
+            #if DEBUG
             print("[ScoringService] ✅ Decoded successfully: score=\(result.overallScore), style=\(result.style)")
+            #endif
             return result
         } catch {
+            #if DEBUG
             print("[ScoringService] ⚠️ Decoding failed: \(error)")
             print("[ScoringService] Retrying...")
+            #endif
             let retryData = try await apiClient.post("/score", body: compressed)
+            #if DEBUG
             if let retryJSON = String(data: retryData, encoding: .utf8) {
                 print("[ScoringService] Retry response: \(retryJSON.prefix(500))")
             }
+            #endif
             do {
                 let result = try JSONDecoder().decode(ScanResult.self, from: retryData)
+                #if DEBUG
                 print("[ScoringService] ✅ Retry decoded successfully")
+                #endif
                 return result
             } catch {
+                #if DEBUG
                 print("[ScoringService] ❌ Retry decoding also failed: \(error)")
+                #endif
                 throw error
             }
         }

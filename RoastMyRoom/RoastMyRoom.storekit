@@ -1,0 +1,195 @@
+{
+  "identifier" : "0CC3B212-BA0D-4F10-A958-29A1B42DC744",
+  "type" : "Configuration",
+  "version" : 3,
+  "subscriptionGroups" : [
+    {
+      "id" : "21370A9C-C908-4F3F-8B43-A4377903F141",
+      "localizations" : [
+        {
+          "description" : "Unlimited scans and premium features",
+          "displayName" : "RoastMyRoom Premium",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+          "introductoryOffer" : {
+            "internalID" : "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P3D"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlimited scans, radar chart, tips, personality & more",
+              "displayName" : "Weekly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "roomscore.weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "Weekly",
+          "subscriptionGroupID" : "21370A9C-C908-4F3F-8B43-A4377903F141",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "29.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "B2C3D4E5-F6A7-8901-BCDE-F12345678901",
+          "introductoryOffer" : {
+            "internalID" : "BBBBBBBB-CCCC-DDDD-EEEE-FFFFFFFFFFFF",
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1W"
+          },
+          "localizations" : [
+            {
+              "description" : "Unlimited scans, radar chart, tips, personality & more",
+              "displayName" : "Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "roomscore.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Annual",
+          "subscriptionGroupID" : "21370A9C-C908-4F3F-8B43-A4377903F141",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "products" : [
+    {
+      "displayPrice" : "49.99",
+      "familyShareable" : false,
+      "internalID" : "C3D4E5F6-A7B8-9012-CDEF-123456789012",
+      "localizations" : [
+        {
+          "description" : "Unlock all premium features forever",
+          "displayName" : "Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "roomscore.lifetime",
+      "referenceName" : "Lifetime",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "D4E5F6A7-B8C9-0123-DEF0-123456789ABC",
+      "localizations" : [
+        {
+          "description" : "10 points for extra scans",
+          "displayName" : "10 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "roomscore.points.10",
+      "referenceName" : "10 Points",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "E5F6A7B8-C9D0-1234-EF01-23456789ABCD",
+      "localizations" : [
+        {
+          "description" : "35 points for extra scans",
+          "displayName" : "35 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "roomscore.points.35",
+      "referenceName" : "35 Points",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "F6A7B8C9-D0E1-2345-F012-3456789ABCDE",
+      "localizations" : [
+        {
+          "description" : "75 points for extra scans",
+          "displayName" : "75 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "roomscore.points.75",
+      "referenceName" : "75 Points",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "A7B8C9D0-E1F2-3456-0123-456789ABCDEF",
+      "localizations" : [
+        {
+          "description" : "200 points for extra scans",
+          "displayName" : "200 Points",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "roomscore.points.200",
+      "referenceName" : "200 Points",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitPaymentMode" : 0
+  }
+}

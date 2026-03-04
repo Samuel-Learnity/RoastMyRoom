@@ -26,6 +26,16 @@
 		7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EC184D02F5124740088CAF9 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		080E313D66A5D65E9F438F34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7E0BF8692F4E1B9800BAFC68 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E0BF8702F4E1B9800BAFC68;
+			remoteInfo = RoastMyRoom;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RoastMyRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
@@ -45,6 +55,7 @@
 		7E0BF9092F4E6D5E00BAFC68 /* roomscore-prompt-v2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = "roomscore-prompt-v2.md"; sourceTree = "<group>"; };
 		7E0C6D322F5497BD00F570D2 /* TRACKING_PLAN.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TRACKING_PLAN.md; sourceTree = "<group>"; };
 		7EC184D02F5124740088CAF9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		8660408BFA332DD7502284FC /* RoastMyRoomTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoastMyRoomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -66,6 +77,11 @@
 			path = RoastMyRoom;
 			sourceTree = "<group>";
 		};
+		289353E38A2DEF86C28260CD /* RoastMyRoomTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = RoastMyRoomTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +94,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		55CA9DCDBAF2650330A1050B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -85,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				7E0BF8732F4E1B9800BAFC68 /* RoastMyRoom */,
+				289353E38A2DEF86C28260CD /* RoastMyRoomTests */,
 				7E0BF8722F4E1B9800BAFC68 /* Products */,
 				7E0BF8812F4E1C0E00BAFC68 /* CLAUDE.md */,
 				7E0C6D322F5497BD00F570D2 /* TRACKING_PLAN.md */,
@@ -99,6 +123,7 @@
 			isa = PBXGroup;
 			children = (
 				7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */,
+				8660408BFA332DD7502284FC /* RoastMyRoomTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -196,6 +221,27 @@
 			productReference = 7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */;
 			productType = "com.apple.product-type.application";
 		};
+		17A44A35BCE1A812E4650EC5 /* RoastMyRoomTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */;
+			buildPhases = (
+				BFA1BE13201CF8ECF6DCD7F7 /* Sources */,
+				55CA9DCDBAF2650330A1050B /* Frameworks */,
+				9364B4C3B86E9FB1A565D6FD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				97C116957FABC1A41C5DADC3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				289353E38A2DEF86C28260CD /* RoastMyRoomTests */,
+			);
+			name = RoastMyRoomTests;
+			productName = RoastMyRoomTests;
+			productReference = 8660408BFA332DD7502284FC /* RoastMyRoomTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -208,6 +254,10 @@
 				TargetAttributes = {
 					7E0BF8702F4E1B9800BAFC68 = {
 						CreatedOnToolsVersion = 26.3;
+					};
+					17A44A35BCE1A812E4650EC5 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 7E0BF8702F4E1B9800BAFC68;
 					};
 				};
 			};
@@ -232,6 +282,7 @@
 			projectRoot = "";
 			targets = (
 				7E0BF8702F4E1B9800BAFC68 /* RoastMyRoom */,
+				17A44A35BCE1A812E4650EC5 /* RoastMyRoomTests */,
 			);
 		};
 /* End PBXProject section */
@@ -259,6 +310,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9364B4C3B86E9FB1A565D6FD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -269,7 +327,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BFA1BE13201CF8ECF6DCD7F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		97C116957FABC1A41C5DADC3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7E0BF8702F4E1B9800BAFC68 /* RoastMyRoom */;
+			targetProxy = 080E313D66A5D65E9F438F34 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		7E0BF87C2F4E1B9900BAFC68 /* Debug */ = {
@@ -469,6 +542,54 @@
 			};
 			name = Release;
 		};
+		992CA4D46D7EEE0AEFF3FCC6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W8FBDWFCMJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoomTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RoastMyRoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RoastMyRoom";
+			};
+			name = Debug;
+		};
+		5D0DB20AC470E6E7B9EAD175 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W8FBDWFCMJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoomTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RoastMyRoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RoastMyRoom";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -486,6 +607,15 @@
 			buildConfigurations = (
 				7E0BF87F2F4E1B9900BAFC68 /* Debug */,
 				7E0BF8802F4E1B9900BAFC68 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				992CA4D46D7EEE0AEFF3FCC6 /* Debug */,
+				5D0DB20AC470E6E7B9EAD175 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

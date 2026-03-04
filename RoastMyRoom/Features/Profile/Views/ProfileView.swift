@@ -312,6 +312,7 @@ struct ProfileView: View {
             .glassBackground()
         }
         .shimmer(isActive: true)
+        .accessibilityHidden(true)
     }
 
     // MARK: - Profile Link Row
