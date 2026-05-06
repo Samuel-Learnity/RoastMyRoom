@@ -1,20 +1,46 @@
 {
   "permissions": {
     "allow": [
-      "mcp__xcodebuildmcp__*",
-      "mcp__XcodeBuildMCP__*",
-      "Read",
-      "Write",
-      "Edit",
-      "Bash(git*)",
-      "Bash(swift*)",
-      "Bash(xcodebuild*)",
-      "Bash(xcrun simctl:*)",
-      "Bash(xcrun devicectl:*)",
-      "Bash(xcrun assetutil:*)",
-      "Bash(plutil:*)",
-      "Bash(gh *)",
-      "Bash(/Applications/Xcode.app/Contents/Developer/usr/bin/ibtool:*)"
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(xcrun simctl list*)",
+      "Bash(swift build*)",
+      "Bash(swift test*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Glass.aiff 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }
