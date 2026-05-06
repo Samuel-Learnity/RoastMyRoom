@@ -6,10 +6,10 @@ App iOS native Swift 6 / SwiftUI / iOS 26+ qui note les pièces de la maison via
 
 ## WHAT
 
-- **Code Swift** : `RoastMyRoom/` (Sources, ViewModels, Services, Models, Views)
+- **Code Swift** : `RoastMyRoom/` — `App/` (entry point, RootView), `Core/{Extensions,Models,Services}/`, `Features/{Scan,Analysis,Result,Profile,History,ATT,Paywall,Onboarding}/`
 - **Tests** : `RoastMyRoomTests/`
-- **Dépendances** : `Package.swift` (SPM — `firebase-ios-sdk` FirebaseAnalytics uniquement)
-- **Assets** : `RoastMyRoom/Resources/Assets.xcassets/`
+- **Dépendances** : SPM géré via Xcode (résolu dans `RoastMyRoom.xcodeproj/…/swiftpm/Package.resolved`, ~14 packages dont `firebase-ios-sdk`)
+- **Assets** : `RoastMyRoom/Assets.xcassets/`
 - **App Store Connect** : `ASC/` — métadonnées localisées + fastlane
 - **Companion web** : `web/`
 - **Backend** : `supabase/`
@@ -64,7 +64,7 @@ bundle exec fastlane release           # build + metadata + screenshots + soumis
 - **Async** : `async/await` uniquement — pas de Combine, pas de `DispatchQueue` sauf interop UIKit
 - **Persistence** : SwiftData (`@Model`) — pas CoreData
 - **SwiftUI** : `body` < 30 lignes, extraire sous-vues. `.toolbar {}` avec Liquid Glass automatique (ne pas ajouter `.buttonStyle(.glass)` manuellement). `NavigationStack`, pas `NavigationView`
-- **TabView** : ViewModels des onglets créés comme `@State` dans `MainTabView` et injectés — jamais recréés dans les vues enfants
+- **TabView** : ViewModels des onglets créés comme `@State` dans `MainTabView` (`App/RootView.swift`) et injectés — jamais recréés dans les vues enfants
 - **Couleurs** : `Color+Theme.swift` uniquement — jamais de hex hardcodé
 - **Previews** : `#Preview` par état clé (loading / success / error / empty)
 - **Tests** : framework `Swift Testing` (`import Testing`, `#expect`, `@Test`)
