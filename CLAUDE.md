@@ -1,439 +1,90 @@
-# CLAUDE.md — Instructions pour le développement assisté par IA
+# CLAUDE.md — RoastMyRoom
 
-> Ce fichier configure le comportement de Claude Code pour ce projet.
-> Toujours lire SPEC.md pour les détails fonctionnels.
+## WHY
 
----
+App iOS native Swift 6 / SwiftUI / iOS 26+ qui note les pièces de la maison via IA (photo → score /10 → carte partageable → boucle virale). Distribuée en production via App Store. Backend Supabase Edge Functions (Deno/TS) + Firebase Analytics.
 
-## Build
+## WHAT
 
-- **Scheme** : "RoastMyRoom"
-- **Simulateur par défaut** : iPhone 17 Pro (iOS 26.2)
-- **Device de test** : Samuel's iPhone (iPhone 16 Pro, id: `00008140-001202460184801C`, CoreDevice: `00992BA0-472B-5500-810E-D896A8F380B8`)
-- Toujours utiliser `--quiet` avec xcodebuild
-- Utiliser les outils MCP XcodeBuildMCP plutôt que xcodebuild brut
+- **Code Swift** : `RoastMyRoom/` (Sources, ViewModels, Services, Models, Views)
+- **Tests** : `RoastMyRoomTests/`
+- **Dépendances** : `Package.swift` (SPM — `firebase-ios-sdk` FirebaseAnalytics uniquement)
+- **Assets** : `RoastMyRoom/Resources/Assets.xcassets/`
+- **App Store Connect** : `ASC/` — métadonnées localisées + fastlane
+- **Companion web** : `web/`
+- **Backend** : `supabase/`
+- **Hooks & permissions** : `.claude/settings.json`
 
-### Commandes MCP préférées
+## HOW — Workflow
 
-- Build : `mcp__xcode-tools__BuildProject`
-- Tests : `mcp__xcode-tools__RunAllTests` / `mcp__xcode-tools__RunSomeTests`
-- Preview : `mcp__xcode-tools__RenderPreview`
-- Diagnostics rapides : `mcp__xcode-tools__XcodeRefreshCodeIssuesInFile`
-- Issues : `mcp__xcode-tools__XcodeListNavigatorIssues`
-
----
-
-## Projet
-
-**RoastMyRoom** — App iOS (Swift, SwiftUI) de notation de pièces par IA.
-Photo → Score /10 → Carte partageable → Boucle virale.
-
-- **Target** : iOS 26+, iPhone uniquement
-- **Xcode** : 26+
-- **Swift** : 6.1, concurrency stricte activée
-- **Architecture** : MVVM strict
-- **Persistence** : SwiftData
-- **IAP** : StoreKit 2 natif
-- **Backend** : Supabase Edge Functions (Deno/TypeScript)
-- **Packages** : `firebase-ios-sdk` (FirebaseAnalytics uniquement) via SPM
-
----
-
-## Architecture
-
-MVVM avec injection via `AppFactory` (singleton, composition root).
-
-> Arbre de fichiers complet : voir **SPEC.md §2**.
-
----
-
-## Pipeline principal
-
-> Pipeline détaillé : voir **SPEC.md §4**.
-
-Résumé : `Photo → ScanViewModel → AnalysisView → APIClient (GPT-4.1 mini) → ScanResult → StorageService → ResultView`
-
----
-
-## Flux de données
+### MCP XcodeBuildMCP (préféré à `xcodebuild` brut)
 
 ```
-View (SwiftUI, déclarative)
-  ↕ @State var viewModel (Observation framework)
-ViewModel (@MainActor, @Observable)
-  → Service (protocole, injecté via init)
-    → API / SwiftData / StoreKit / AVFoundation
+Scheme  : RoastMyRoom
+Sim     : iPhone 17 Pro (iOS 26.2)   ← défaut session_set_defaults
+Device  : Samuel's iPhone 16 Pro
+         id         : 00008140-001202460184801C
+         CoreDevice : 00992BA0-472B-5500-810E-D896A8F380B8
 ```
 
-- **Views** : Déclaratives, zéro logique métier. `@State var viewModel` pour les VMs.
-- **ViewModels** : `@MainActor @Observable final class`. Appellent services.
-- **Services** : Protocoles + implémentations concrètes. Injectés par `AppFactory`.
-- **Models** : `Codable` structs transport. `@Model` SwiftData persistance.
+Toujours appeler `session_show_defaults` avant le premier build d'une session, puis `build_run_sim` / `test_sim` / `screenshot` via MCP.
 
----
+### Fastlane (ASC)
 
-## Code Style
+```bash
+export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
 
-### Swift
-
-- **Naming** : PascalCase types, camelCase propriétés/méthodes
-- **State** : `@State private var` pour SwiftUI, `let` pour constantes
-- **Accès** : `private` par défaut. `internal` si partagé. Jamais `open`.
-- **Optionals** : `guard let` early return. Jamais de `!` (sauf `fatalError` debug)
-- **Formatting** : 4 espaces. Pas de trailing whitespace.
-- **Imports** : Triés alpha. Un par ligne. Pas d'inutile.
-- **Types** : Typage fort. Pas de `Any`. Pas de `as!`.
-- **Strings** : **JAMAIS de texte brut dans le code**. Tout texte visible par l'utilisateur doit passer par `String(localized:)` avec une clé dans `Localizable.xcstrings`. Chaque nouvelle clé doit être traduite dans les 4 langues : EN, FR, DE, ES.
-- **Commentaires** : `///` doc publique, `//` inline. Pas d'évidence.
-- **Async** : `async/await` uniquement. Pas de Combine. Pas de callbacks.
-
-### SwiftUI
-
-- **body** < 30 lignes. Extraire sous-vues sinon.
-- **Previews** : `#Preview` pour chaque View avec données mock
-- **Modifiers** : layout → style → effets → animation → accessibilité
-- **Couleurs** : `Color+Theme.swift` uniquement. Jamais de hex hardcodé.
-- **Navigation** : `NavigationStack` (pas NavigationView)
-- **Sheets** : `.sheet(item:)` quand on passe des données
-- **Listes** : `LazyVStack`/`LazyVGrid` pour contenu, `List` pour Settings
-- **ScrollView** : Toujours masquer les indicateurs de scroll (`ScrollView(showsIndicators: false)` ou `.scrollIndicators(.hidden)`)
-- **Toolbar** : Les boutons dans `.toolbar {}` ont automatiquement un background Liquid Glass. Ne jamais ajouter `.buttonStyle(.glass)` ni de background custom. Utiliser `.buttonStyle(.glassProminent)` uniquement pour les actions principales (ex: Partager).
-- **TabView (MainTabView)** :
-  - Les ViewModels des onglets (History, Profile…) doivent être créés comme `@State` dans `MainTabView` et injectés dans les vues enfants.
-  - Création unique dans `.task` au niveau `MainTabView` avec `modelContext`.
-  - Les vues enfants ne doivent **jamais** créer leur propre ViewModel — seulement appeler les méthodes de rafraîchissement (`.loadScans()`, `.loadStats()`) dans leur `.task`.
-  - Raison : SwiftUI lazy-load les tabs, recréer le VM à chaque switch provoque un délai visible.
-
-### Concurrency
-
-- `@MainActor` sur tous les ViewModels
-- `.task {}` modifier pour lancer async depuis les Views
-- Services → `async throws`, VM catch → `private(set) var error: String?`
-- Pas de `DispatchQueue` sauf interop UIKit inévitable
-
----
-
-## Patterns
-
-```swift
-// ✅ Service — Protocole + impl
-protocol ScoringServiceProtocol {
-    func scoreRoom(image: UIImage) async throws -> ScanResult
-}
-
-final class ScoringService: ScoringServiceProtocol {
-    private let apiClient: APIClientProtocol
-    private let imageProcessor: ImageProcessorProtocol
-
-    init(apiClient: APIClientProtocol, imageProcessor: ImageProcessorProtocol) {
-        self.apiClient = apiClient
-        self.imageProcessor = imageProcessor
-    }
-
-    func scoreRoom(image: UIImage) async throws -> ScanResult {
-        let compressed = try imageProcessor.prepare(image)
-        let data = try await apiClient.post("/score", body: compressed)
-        return try JSONDecoder().decode(ScanResult.self, from: data)
-    }
-}
-
-// ✅ ViewModel — @MainActor, @Observable
-@MainActor
-@Observable
-final class AnalysisViewModel {
-    enum State: Equatable {
-        case idle, analyzing, success(RoomScan), error(String)
-    }
-
-    private(set) var state: State = .idle
-    private let scoringService: ScoringServiceProtocol
-    private let storageService: StorageServiceProtocol
-
-    init(scoringService: ScoringServiceProtocol, storageService: StorageServiceProtocol) {
-        self.scoringService = scoringService
-        self.storageService = storageService
-    }
-
-    func analyze(image: UIImage) async {
-        state = .analyzing
-        do {
-            let result = try await scoringService.scoreRoom(image: image)
-            let scan = RoomScan(from: result, imageData: image.jpegData(compressionQuality: 0.8)!)
-            try storageService.save(scan)
-            state = .success(scan)
-        } catch {
-            state = .error(error.localizedDescription)
-        }
-    }
-}
-
-// ✅ View — Déclarative, sous-vues extraites
-struct ResultView: View {
-    @State var viewModel: ResultViewModel
-
-    var body: some View {
-        ScrollView {
-            heroSection
-            scoreSection
-            styleBadge
-            roastBanner
-            subScoresSection
-            tipsSection
-        }
-        .safeAreaInset(edge: .bottom) { actionBar }
-    }
-
-    private var heroSection: some View { ... }
-    private var scoreSection: some View { ... }
-}
-
-// ✅ Mock pour tests
-final class MockScoringService: ScoringServiceProtocol {
-    var mockResult: ScanResult = .mock
-
-    func scoreRoom(image: UIImage) async throws -> ScanResult {
-        mockResult
-    }
-}
-
-// ✅ ViewState enum réutilisable
-enum ViewState<T: Equatable>: Equatable {
-    case idle, loading, success(T), error(String)
-}
+bundle exec fastlane metadata          # upload métadonnées localisées
+bundle exec fastlane screenshots       # upload screenshots localisés
+bundle exec fastlane upload_store_assets  # metadata + screenshots
+bundle exec fastlane archive_upload    # archive Release + upload ASC
+bundle exec fastlane release           # build + metadata + screenshots + soumission
 ```
 
-### Anti-patterns
+> **Workaround critique** : fastlane utilise l'API Spaceship directement (pas `deliver`) pour contourner les bugs de `deliver` sur les uploads ASC. Ne pas revenir à `deliver` sans tester.
 
-```swift
-// ❌ Force unwrap
-let image = UIImage(named: "photo")!
+### Build bottom-up
 
-// ❌ Logique métier dans la View
-Button("Score") { let data = try await URLSession.shared.data(from: url) }
+`Model → Service → ViewModel → View → Tests → #Preview → build sans warning`
 
-// ❌ Combine
-var cancellables = Set<AnyCancellable>()
+## RÈGLES NON-NÉGOCIABLES
 
-// ❌ Singleton service
-static let shared = APIClient()  // Injecter via init
+1. **Jamais** de force-unwrap (`!`) hors `fatalError` debug — utiliser `guard let` ou `??`
+2. **Jamais** de `Any` / `AnyObject` quand un type concret est connu
+3. **Jamais** d'accès UI hors `@MainActor` (Swift 6 strict concurrency)
+4. **Jamais** commit sans build passant (`build_sim` MCP retourne success)
+5. **Toujours** un test pour les ViewModels avec logique métier
+6. **Toujours** `@Observable` (Observation framework) pour les ViewModels SwiftUI — pas `ObservableObject`
+7. **Toujours** MCP XcodeBuildMCP plutôt que `xcodebuild` brut
+8. **Toujours** localiser via `String(localized:)` dans les 4 langues : EN, FR, DE, ES
 
-// ❌ ObservableObject / @Published / @StateObject
-// Utiliser @Observable + @State (Observation framework)
+## Conventions iOS
 
-// ❌ NavigationView
-NavigationView { }  // NavigationStack
+- **Architecture** : MVVM strict — `@MainActor @Observable final class`. `AppFactory` = composition root (DI init-based, pas de singleton sauf `AppFactory`)
+- **Async** : `async/await` uniquement — pas de Combine, pas de `DispatchQueue` sauf interop UIKit
+- **Persistence** : SwiftData (`@Model`) — pas CoreData
+- **SwiftUI** : `body` < 30 lignes, extraire sous-vues. `.toolbar {}` avec Liquid Glass automatique (ne pas ajouter `.buttonStyle(.glass)` manuellement). `NavigationStack`, pas `NavigationView`
+- **TabView** : ViewModels des onglets créés comme `@State` dans `MainTabView` et injectés — jamais recréés dans les vues enfants
+- **Couleurs** : `Color+Theme.swift` uniquement — jamais de hex hardcodé
+- **Previews** : `#Preview` par état clé (loading / success / error / empty)
+- **Tests** : framework `Swift Testing` (`import Testing`, `#expect`, `@Test`)
 
-// ❌ Couleur hardcodée
-.foregroundColor(Color(hex: "#5E5CE6"))  // Color.rsAccent
+## Identifiants App Store
 
-// ❌ String non localisée
-Text("Score")  // Text(String(localized: "score_label"))
-```
+| Champ | Valeur |
+|-------|--------|
+| Bundle ID | `com.disco.RoastMyRoom` |
+| SKU | `RoastMyRoom` |
+| Langues | EN, FR, DE, ES |
+| IAP | 3 subscriptions (weekly / annual / lifetime) + 4 consumables (points) |
+| `whats_new` | Non uploadable pour v1.0 (première version) |
 
----
+## Gotchas
 
-## Tests
-
-### Framework : Swift Testing (`import Testing`)
-
-```swift
-import Testing
-@testable import RoastMyRoom
-
-@Test func scoringServiceDecodesValidJSON() async throws {
-    let service = ScoringService(apiClient: MockAPIClient(responseFixture: "valid_score"))
-    let result = try await service.scoreRoom(image: UIImage())
-    #expect(result.overallScore >= 0 && result.overallScore <= 10)
-    #expect(result.tips.count == 3)
-}
-
-@Test func imageProcessorRejectsSelfie() async throws {
-    let processor = ImageProcessor()
-    #expect(throws: ImageProcessorError.notARoom) {
-        try processor.prepare(selfieImage)
-    }
-}
-```
-
-### Quoi tester
-
-| Couche | Quoi | Mock |
-|--------|------|------|
-| Services | `ScoringService` : parsing JSON, erreurs | MockAPIClient |
-| Services | `ImageProcessor` : compression, validation | Images fixtures |
-| Services | `SubscriptionService` : logique premium/free | StoreKit Config File |
-| ViewModels | `AnalysisViewModel` : flow analyze | MockScoringService |
-| ViewModels | `HistoryViewModel` : fetch, delete, limite | MockStorageService |
-| Models | `RoomScan`, `SubScores` : Codable, calculs | JSON fixtures |
-
-### Pas tester (MVP)
-
-- Views SwiftUI (Previews = test visuel)
-- AVFoundation (device)
-- StoreKit transactions réelles
-- API OpenAI
-
----
-
-## Règles
-
-### Interdictions
-
-- Ne **JAMAIS** supprimer DerivedData sans permission
-- Ne **JAMAIS** modifier le `.pbxproj` manuellement
-- Toujours **builder + tester avant de rendre la main**
-- Utiliser les **conventions Apple** pour le nommage
-
-### Développement
-
-1. **SPEC.md est la source de vérité** — pas dans la spec = pas construit
-2. **Simplicity First** — code le plus simple qui marche. Pas de sur-ingénierie
-3. **Root Cause** — cause racine, pas de fix temporaire
-4. **Minimal Impact** — toucher uniquement ce qui est nécessaire
-5. **Vérifier avant de valider** — build, test, preuve que ça marche
-6. **Plan mode** pour toute tâche non triviale (3+ fichiers ou décision archi)
-
-### Workflow
-
-```
-1. Lire la section SPEC.md correspondante
-2. Identifier fichiers à créer/modifier
-3. Proposer plan (si non trivial)
-4. Implémenter bottom-up : Model → Service → ViewModel → View
-5. Tests (Service + ViewModel)
-6. #Preview
-7. Build sans warning + tests passent
-```
-
-### Checklist
-
-- [ ] Compile sans warning
-- [ ] Tests passent
-- [ ] Previews fonctionnelles
-- [ ] Strings localisées
-- [ ] Couleurs via Color+Theme
-- [ ] ViewModels `@MainActor`
-- [ ] Services injectés (pas de singleton sauf AppFactory)
-- [ ] Accessibilité basique (labels, Dynamic Type)
-
----
-
-## Ordre d'implémentation
-
-> Phases 1-3 terminées. Voir **SPEC.md** pour le détail des screens et fonctionnalités.
-
-Phase 4 restante — Polish :
-- Haptics ✅
-- Localisation EN + FR + DE + ES ✅
-- Tests unitaires
-- QA + App Store prep
-
----
-
-## Keychain (Anti-Abus)
-
-- **Service** : `KeychainService` (protocole `KeychainServiceProtocol`)
-- **Framework** : `Security.framework` (pas de SPM)
-- **Clés stockées** :
-  - `pointsBalance` — Solde de points (Int)
-  - `pointsBalanceInitialized` — Flag premier lancement (Bool)
-  - `dailyScanCount` — Compteur scans quotidiens (Int)
-  - `lastScanDate` — Date du dernier scan (Date)
-  - `hasSeenOnboarding` — Onboarding terminé (Bool, écrit aussi dans AppStorage pour SwiftUI)
-- **Migration** : Au premier lancement post-migration, les valeurs UserDefaults sont copiées dans Keychain puis supprimées de UserDefaults
-- **Persistance** : Les données Keychain survivent à une désinstallation/réinstallation → anti-abus
-- **Accessibility** : `kSecAttrAccessibleAfterFirstUnlock` pour accès en background
-
----
-
-## Auth (Sign in with Apple)
-
-- **Service** : `AuthService` (protocole `AuthServiceProtocol`)
-- **Model** : `AuthSession` (Codable — accessToken, refreshToken, userId, expiresAt)
-- **Flow** :
-  1. `ASAuthorizationAppleIDProvider` → identityToken (JWT Apple)
-  2. POST Supabase Auth : `/auth/v1/token?grant_type=id_token`
-  3. Stockage session en Keychain (accessToken, refreshToken, userId, email)
-  4. Refresh automatique si token expiré (5 min avant expiration)
-- **Clés Keychain** : `auth_access_token`, `auth_refresh_token`, `auth_user_id`, `auth_expires_at`, `auth_user_email`
-- **Sync points** : Après connexion, `max(local, remote)` merge strategy
-- **Entitlement** : `com.apple.developer.applesignin` dans `.entitlements`
-- **Auth PAS obligatoire** : Les achats fonctionnent sans auth. L'auth ajoute la sync cross-device.
-- **Prérequis Supabase** : Provider Apple activé + table `user_points` (voir plan d'implémentation)
-
----
-
-## Analytics (Firebase)
-
-- **Plan de marquage** : voir `TRACKING_PLAN.md`
-- **Service** : `AnalyticsService` (protocole `AnalyticsServiceProtocol`)
-- **Événements typés** : `AnalyticsEvent` (factory methods statiques)
-- **Règle** : Toute nouvelle feature visible par l'utilisateur DOIT avoir ses événements de tracking ajoutés dans le ViewModel correspondant ET documentés dans `TRACKING_PLAN.md`
-- **Convention** : `snake_case` pour les noms d'événements, paramètres en `snake_case`
-- **Tracking dans les ViewModels** — les Views appellent les méthodes de tracking du ViewModel, sauf `screen_view` qui est tracké via `.onAppear` directement
-- **Firebase config** : `GoogleService-Info.plist` requis dans le target. Sans ce fichier, Firebase est désactivé et un log console s'affiche en debug.
-- **SPM** : `firebase-ios-sdk` — uniquement `FirebaseAnalytics`
-
----
-
-## App Store Connect (ASC)
-
-Le dossier `ASC/` contient tout le matériel pour la soumission App Store :
-
-```
-ASC/
-├── app_info.md              — Référence métadonnées ASC (Bundle ID, SKU, IAP, privacy)
-├── review_notes.txt         — Instructions pour l'équipe de review Apple
-├── generate_screenshots.py  — Script Python pour générer les screenshots localisés
-├── screenshots/             — Screenshots source (8 PNG non localisés)
-│   └── SCREENSHOT_GUIDE.md  — Guide dimensions et bonnes pratiques
-├── metadata/                — Métadonnées localisées (4 langues)
-│   ├── en-US/               — name.txt, subtitle.txt, description.txt, promotional_text.txt, keywords.txt, whats_new.txt
-│   ├── fr-FR/
-│   ├── de-DE/
-│   └── es-ES/
-└── output/                  — Screenshots générés prêts pour ASC (32 PNG = 8 × 4 langues)
-    ├── en-US/
-    ├── fr-FR/
-    ├── de-DE/
-    └── es-ES/
-```
-
-- **Bundle ID** : `com.disco.RoastMyRoom`
-- **SKU** : `RoastMyRoom`
-- **Langues** : EN, FR, DE, ES
-- **IAP** : 3 subscriptions (weekly/annual/lifetime) + 4 consumables (points)
-- **Pipeline screenshots** : `python3 ASC/generate_screenshots.py` → génère `ASC/output/`
-- **Fastlane** : `fastlane/` — pipeline automatisé (utilise l'API Spaceship directement pour contourner les bugs de `deliver`)
-  - `bundle exec fastlane metadata` — upload métadonnées localisées (version + App Info)
-  - `bundle exec fastlane screenshots` — upload screenshots localisés
-  - `bundle exec fastlane upload_store_assets` — metadata + screenshots ensemble
-  - `bundle exec fastlane archive_upload` — archive Release + upload ASC
-  - `bundle exec fastlane release` — build + metadata + screenshots + soumission review
-- **Ruby** : Homebrew Ruby requis (`export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"`)
-- **Note** : `whats_new` n'est pas uploadable pour la v1.0 (première version)
-
----
-
-## Git
-
-### Branches
-
-```
-main              — Production
-develop           — Intégration
-feature/scan      — Feature
-fix/camera-crash  — Bug fix
-```
-
-### Commits
-
-```
-feat(scan): add camera preview with AVFoundation
-feat(result): implement score animation with spring
-fix(paywall): fix sheet dismiss not updating state
-refactor(services): extract image compression to ImageProcessor
-test(scoring): add JSON parsing tests
-```
-
-Types : `feat`, `fix`, `refactor`, `test`, `chore`, `docs`
+- **Simulator state** : `xcrun simctl erase` si comportement bizarre après changement d'iOS
+- **Swift 6 + main-actor** : strict concurrency active — warnings à traiter progressivement, pas d'un coup
+- **Firebase** : `GoogleService-Info.plist` requis dans le target (sans lui, Firebase désactivé + log console)
+- **Keychain anti-abus** : `KeychainService` survit aux désinstallations (`kSecAttrAccessibleAfterFirstUnlock`) — clés : `pointsBalance`, `dailyScanCount`, `lastScanDate`, `hasSeenOnboarding`
+- **Auth** : Sign in with Apple → Supabase (`/auth/v1/token?grant_type=id_token`). Auth optionnelle : achats fonctionnent sans elle
+- **Analytics** : tout nouvel événement visible utilisateur → `AnalyticsEvent` dans le ViewModel + `TRACKING_PLAN.md`
+- **Fastlane** : mettre à jour les gems à chaque release (`bundle update`)
