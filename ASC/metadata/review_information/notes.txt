@@ -1,0 +1,45 @@
+Review Notes for Apple Review Team
+====================================
+
+DEMO ACCOUNT
+No sign-in required. The app works fully without authentication.
+Sign in with Apple is optional and used only for cross-device points sync.
+
+HOW TO TEST
+1. Open the app — you'll see a 3-slide onboarding
+2. Tap "Scan my room" on the last slide
+3. Grant camera access (or use photo library)
+4. Take a photo of any room or pick one from the gallery
+5. Wait ~3 seconds for AI analysis
+6. View your score, roast, and detailed breakdown
+
+FREE TIER
+- 2 free scans per day
+- 4 bonus points granted on first launch
+- Overall score, style badge, and roast are always visible
+- Sub-scores and personality section are blurred (premium feature)
+
+IN-APP PURCHASES
+- 3 subscription plans: Weekly (€4.99), Annual (€29.99), Lifetime (€49.99)
+- 4 consumable point packs: 10/35/75/200 points
+- Points can be used for extra scans beyond the daily limit
+- Points can unlock full details of saved scans
+
+SIGN IN WITH APPLE
+- Completely optional
+- Located in Profile tab
+- Grants 4 bonus points on first sign-up
+- Enables cross-device points synchronization via Supabase backend
+
+NETWORK REQUIREMENT
+The app requires an internet connection for AI room analysis (API call to backend).
+Viewing saved scan history works offline.
+
+THIRD-PARTY SERVICES
+- OpenAI GPT-4.1 mini (via Supabase Edge Function, for room analysis)
+- Supabase (authentication and points sync)
+- Firebase Analytics (anonymous usage analytics only)
+
+CONTENT
+The AI generates humorous "roasts" about rooms. These are lighthearted design
+critiques, never offensive toward people. The humor is about furniture and decor.

@@ -1,0 +1,1 @@
+room,score,AI,design,interior,roast,rate,decor,home,challenge,share,style,tips,quiz,aesthetic

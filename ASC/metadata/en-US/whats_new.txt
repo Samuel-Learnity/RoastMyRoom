@@ -1,0 +1,8 @@
+Welcome to RoastMyRoom! First release:
+• AI-powered room scoring with 5 detailed sub-scores
+• Personality insights, celebrity match, and dating line
+• Mood board with color palette and design suggestions
+• Shareable score cards for Instagram and social media
+• 17 design style classifications
+• Premium subscriptions and points packs
+• Available in English, French, German, and Spanish

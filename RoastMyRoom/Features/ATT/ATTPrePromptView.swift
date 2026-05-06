@@ -73,26 +73,16 @@ struct ATTPrePromptView: View {
     }
 
     private var buttonsSection: some View {
-        VStack(spacing: 12) {
-            Button {
-                continueAction()
-            } label: {
-                Text(String(localized: "att_continue"))
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(Color.rsAccent, in: RoundedRectangle(cornerRadius: 16))
-                    .neonGlow(radius: 20, opacity: 0.6)
-            }
-
-            Button {
-                skipAction()
-            } label: {
-                Text(String(localized: "att_skip"))
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.5))
-            }
+        Button {
+            continueAction()
+        } label: {
+            Text(String(localized: "att_continue"))
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.rsAccent, in: RoundedRectangle(cornerRadius: 16))
+                .neonGlow(radius: 20, opacity: 0.6)
         }
     }
 
@@ -107,13 +97,6 @@ struct ATTPrePromptView: View {
             analyticsService.setUserProperty(statusString, forName: "att_status")
             hasRespondedToATT = true
         }
-    }
-
-    private func skipAction() {
-        let statusString = statusName(ATTrackingManager.trackingAuthorizationStatus)
-        analyticsService.track(.attPermissionResult(status: statusString))
-        analyticsService.setUserProperty(statusString, forName: "att_status")
-        hasRespondedToATT = true
     }
 
     private func statusName(_ status: ATTrackingManager.AuthorizationStatus) -> String {

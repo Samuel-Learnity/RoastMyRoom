@@ -75,7 +75,7 @@ struct PersonalityCardView: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)
-                    .neonGlow(colors: [.aiPurple, .aiPink, .aiLightBlue], radius: 8, opacity: 0.4)
+                    .neonGlow(colors: [.aiPurple, .aiPink, .aiLightBlue], radius: 8, opacity: 0.4, duration: 15)
 
                 if let quote = celebrityQuote {
                     Text(quote)

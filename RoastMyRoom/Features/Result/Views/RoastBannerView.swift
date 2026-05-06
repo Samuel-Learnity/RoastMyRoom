@@ -30,7 +30,8 @@ struct RoastBannerView: View {
             colors: [Color.rsWarning, .red, .orange, Color(red: 1.0, green: 0.3, blue: 0.1)],
             cornerRadius: 20,
             glowRadius: 10,
-            glowOpacity: 0.5
+            glowOpacity: 0.5,
+            duration: 15
         )
     }
 }

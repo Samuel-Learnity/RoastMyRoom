@@ -1,0 +1,1 @@
+habitacion,puntaje,IA,diseno,interior,roast,calificar,deco,hogar,reto,compartir,estilo,tips,casa

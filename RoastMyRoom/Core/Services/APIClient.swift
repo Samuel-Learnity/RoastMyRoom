@@ -13,8 +13,12 @@ enum APIError: Error, LocalizedError {
         switch self {
         case .invalidURL:
             return String(localized: "error_invalid_url")
-        case .networkError:
-            return String(localized: "error_no_network")
+        case .networkError(let underlying):
+            if let urlError = underlying as? URLError,
+               urlError.code == .notConnectedToInternet || urlError.code == .dataNotAllowed {
+                return String(localized: "error_no_network")
+            }
+            return String(localized: "error_network_generic")
         case .serverError:
             return String(localized: "error_server")
         case .invalidResponse:

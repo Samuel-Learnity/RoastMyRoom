@@ -170,25 +170,10 @@ extension View {
     func neonGlow(
         colors: [Color] = [.purple, Color.rsAccent, .pink],
         radius: CGFloat = 16,
-        opacity: Double = 0.7
+        opacity: Double = 0.7,
+        duration: Double? = nil
     ) -> some View {
-        self.modifier(NeonGlowModifier(colors: colors, radius: radius, opacity: opacity))
-    }
-
-    /// Apple Intelligence–inspired glow: animated gradient aura as the button background,
-    /// with a subtle glass blur on top. No solid fill — the glow IS the background.
-    func aiGlow(
-        colors: [Color] = [.purple, Color.rsAccent, .cyan, .pink],
-        cornerRadius: CGFloat = 16,
-        glowRadius: CGFloat = 12,
-        glowOpacity: Double = 0.8
-    ) -> some View {
-        self.modifier(AIGlowModifier(
-            colors: colors,
-            cornerRadius: cornerRadius,
-            glowRadius: glowRadius,
-            glowOpacity: glowOpacity
-        ))
+        self.modifier(NeonGlowModifier(colors: colors, radius: radius, opacity: opacity, duration: duration))
     }
 }
 
@@ -196,81 +181,116 @@ private struct NeonGlowModifier: ViewModifier {
     let colors: [Color]
     let radius: CGFloat
     let opacity: Double
+    let duration: Double?
+    @State private var visible = true
 
     func body(content: Content) -> some View {
         content
             .background {
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: colors,
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                if visible {
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: colors,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .blur(radius: radius)
-                    .opacity(opacity)
+                        .blur(radius: radius)
+                        .opacity(opacity)
+                        .transition(.opacity)
+                }
+            }
+            .task(id: duration) {
+                guard let duration else { return }
+                try? await Task.sleep(for: .seconds(duration))
+                withAnimation(.easeOut(duration: 1.5)) {
+                    visible = false
+                }
             }
     }
 }
 
 // MARK: - AI Glow (Apple Intelligence style)
 
+extension View {
+    func aiGlow(
+        colors: [Color] = [.purple, Color.rsAccent, .cyan, .pink],
+        cornerRadius: CGFloat = 16,
+        glowRadius: CGFloat = 12,
+        glowOpacity: Double = 0.8,
+        duration: Double? = nil
+    ) -> some View {
+        self.modifier(AIGlowModifier(
+            colors: colors,
+            cornerRadius: cornerRadius,
+            glowRadius: glowRadius,
+            glowOpacity: glowOpacity,
+            duration: duration
+        ))
+    }
+}
+
 private struct AIGlowModifier: ViewModifier {
     let colors: [Color]
     let cornerRadius: CGFloat
     let glowRadius: CGFloat
     let glowOpacity: Double
+    let duration: Double?
     @State private var phase: CGFloat = 0
+    @State private var visible = true
 
     func body(content: Content) -> some View {
         content
             .background {
-                ZStack {
-                    // Outer diffused glow — spreads beyond the button
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(
-                            AngularGradient(
-                                colors: colors + [colors.first ?? .purple],
-                                center: .center,
-                                startAngle: .degrees(Double(phase) * 360),
-                                endAngle: .degrees(Double(phase) * 360 + 360)
+                if visible {
+                    ZStack {
+                        // Outer diffused glow -> spreads beyond the button
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(
+                                AngularGradient(
+                                    colors: colors + [colors.first ?? .purple],
+                                    center: .center,
+                                    startAngle: .degrees(Double(phase) * 360),
+                                    endAngle: .degrees(Double(phase) * 360 + 360)
+                                )
                             )
-                        )
-                        .blur(radius: glowRadius + 8)
-                        .opacity(glowOpacity * 0.6)
-                        .scaleEffect(1.15)
+                            .blur(radius: glowRadius + 8)
+                            .opacity(glowOpacity * 0.6)
+                            .scaleEffect(1.15)
 
-                    // Inner glow — tighter, more saturated
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(
-                            AngularGradient(
-                                colors: colors + [colors.first ?? .purple],
-                                center: .center,
-                                startAngle: .degrees(Double(phase) * 360 + 60),
-                                endAngle: .degrees(Double(phase) * 360 + 420)
+                        // Inner glow -> tighter, more saturated
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(
+                                AngularGradient(
+                                    colors: colors + [colors.first ?? .purple],
+                                    center: .center,
+                                    startAngle: .degrees(Double(phase) * 360 + 60),
+                                    endAngle: .degrees(Double(phase) * 360 + 420)
+                                )
                             )
-                        )
-                        .blur(radius: glowRadius)
-                        .opacity(glowOpacity)
+                            .blur(radius: glowRadius)
+                            .opacity(glowOpacity)
 
-                    // Glass layer — subtle frosted surface
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(.ultraThinMaterial)
-                        .opacity(0.5)
+                        // Glass layer -> subtle frosted surface
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .fill(.ultraThinMaterial)
+                            .opacity(0.5)
 
-                    // Thin bright border tracing the glow
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(
-                            AngularGradient(
-                                colors: colors + [colors.first ?? .purple],
-                                center: .center,
-                                startAngle: .degrees(Double(phase) * 360),
-                                endAngle: .degrees(Double(phase) * 360 + 360)
-                            ),
-                            lineWidth: 1.5
-                        )
-                        .opacity(0.7)
+                        // Thin bright border tracing the glow
+                        RoundedRectangle(cornerRadius: cornerRadius)
+                            .stroke(
+                                AngularGradient(
+                                    colors: colors + [colors.first ?? .purple],
+                                    center: .center,
+                                    startAngle: .degrees(Double(phase) * 360),
+                                    endAngle: .degrees(Double(phase) * 360 + 360)
+                                ),
+                                lineWidth: 1.5
+                            )
+                            .opacity(0.7)
+                    }
+                    .transition(.opacity)
                 }
             }
             .onAppear {
@@ -281,7 +301,68 @@ private struct AIGlowModifier: ViewModifier {
                     phase = 1
                 }
             }
+            .task(id: duration) {
+                guard let duration else { return }
+                try? await Task.sleep(for: .seconds(duration))
+                withAnimation(.easeOut(duration: 1.5)) {
+                    visible = false
+                }
+            }
     }
+}
+
+// MARK: - Previews
+
+#Preview("AI Glow") {
+    VStack(spacing: 32) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color.rsAccent)
+                Text("paywall_bullet_unlimited_scans")
+                    .font(.body)
+                    .foregroundStyle(.white)
+            }
+            HStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color.rsAccent)
+                Text("paywall_bullet_radar")
+                    .font(.body)
+                    .foregroundStyle(.white)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .aiGlow(colors: [.purple.opacity(0.6), Color.rsAccent.opacity(0.5), .cyan.opacity(0.4)], cornerRadius: 20, glowRadius: 8, glowOpacity: 0.3)
+        .padding(20)
+        
+        Text("Buy 10 points, get 1 free")
+            .font(.headline)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 14)
+            .aiGlow()
+
+        Text("✨ Analyze")
+            .font(.title3.bold())
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .aiGlow(cornerRadius: 28)
+            .padding(.horizontal, 40)
+
+        Circle()
+            .fill(.clear)
+            .frame(width: 80, height: 80)
+            .overlay {
+                Image(systemName: "camera.fill")
+                    .font(.title)
+                    .foregroundStyle(.white)
+            }
+            .aiGlow(cornerRadius: 40, glowRadius: 16)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.rsBgBase)
 }
 
 // MARK: - Clear Navigation Controller Background

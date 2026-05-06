@@ -19,6 +19,20 @@ struct ScanView: View {
         NavigationStack {
             ZStack {
                 cameraLayer
+
+//                #if DEBUG
+//                // App Store screenshot overlay
+//                GeometryReader { geo in
+//                    Image("fake_room")
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fill)
+//                        .frame(width: geo.size.width, height: geo.size.height)
+//                        .clipped()
+//                }
+//                .ignoresSafeArea()
+//                .allowsHitTesting(false)
+//                #endif
+
                 controlsOverlay
 
                 // Bottom neon glow
@@ -42,6 +56,7 @@ struct ScanView: View {
                         .animation(.easeInOut(duration: 0.3), value: capsuleDeduct)
                         .onTapGesture {
                             playCapsuleAnimation()
+                            
                             if subscriptionService.isPremium {
                                 let vm = AppFactory.shared.makePaywallViewModel(initialTab: .subscription)
                                 if let activeID = subscriptionService.activeProductID {
@@ -64,6 +79,7 @@ struct ScanView: View {
                             }
                         }
                 }
+                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         viewModel.toggleFlash()
@@ -188,7 +204,7 @@ struct ScanView: View {
                     .fontWeight(.bold)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
-                    .neonGlow(colors: [Color.rsAccent, .purple, .cyan], radius: 10, opacity: 0.4)
+                    .neonGlow(colors: [Color.rsAccent, .purple, .cyan], radius: 10, opacity: 0.4, duration: 30)
 
                 Text(String(localized: "scan_cta_subtitle"))
                     .font(.subheadline)
@@ -261,7 +277,7 @@ struct ScanView: View {
                     .fontWeight(.semibold)
             }
             .foregroundStyle(.white)
-            .neonGlow(colors: [.aiPurple, .aiPink, .aiLightBlue], radius: 10, opacity: 0.6)
+            .neonGlow(colors: [.aiPurple, .aiPink, .aiLightBlue], radius: 10, opacity: 0.6, duration: 30)
         } else {
             HStack(spacing: 10) {
                 HStack(spacing: 4) {
@@ -284,7 +300,7 @@ struct ScanView: View {
                 }
             }
             .foregroundStyle(.white)
-            .neonGlow(colors: [.aiDeepPurple, .aiPurple, .aiLightBlue], radius: 10, opacity: 0.5)
+            .neonGlow(colors: [.aiDeepPurple, .aiPurple, .aiLightBlue], radius: 10, opacity: 0.5, duration: 30)
         }
     }
 

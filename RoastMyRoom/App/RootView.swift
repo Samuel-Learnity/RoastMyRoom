@@ -176,7 +176,7 @@ private struct CameraAccessoryBar: View {
             ) {
                 Image(systemName: "photo.on.rectangle")
                     .font(.title3)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel(String(localized: "accessibility_photo_library"))
@@ -196,10 +196,10 @@ private struct CameraAccessoryBar: View {
             } label: {
                 ZStack {
                     Circle()
-                        .stroke(.primary, lineWidth: 2.5)
+                        .stroke(.white, lineWidth: 2.5)
                         .frame(width: 38, height: 38)
                     Circle()
-                        .fill(.primary)
+                        .fill(.white)
                         .frame(width: 32, height: 32)
                 }
             }

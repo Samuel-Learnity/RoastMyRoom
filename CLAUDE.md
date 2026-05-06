@@ -376,6 +376,45 @@ Phase 4 restante — Polish :
 
 ---
 
+## App Store Connect (ASC)
+
+Le dossier `ASC/` contient tout le matériel pour la soumission App Store :
+
+```
+ASC/
+├── app_info.md              — Référence métadonnées ASC (Bundle ID, SKU, IAP, privacy)
+├── review_notes.txt         — Instructions pour l'équipe de review Apple
+├── generate_screenshots.py  — Script Python pour générer les screenshots localisés
+├── screenshots/             — Screenshots source (8 PNG non localisés)
+│   └── SCREENSHOT_GUIDE.md  — Guide dimensions et bonnes pratiques
+├── metadata/                — Métadonnées localisées (4 langues)
+│   ├── en-US/               — name.txt, subtitle.txt, description.txt, promotional_text.txt, keywords.txt, whats_new.txt
+│   ├── fr-FR/
+│   ├── de-DE/
+│   └── es-ES/
+└── output/                  — Screenshots générés prêts pour ASC (32 PNG = 8 × 4 langues)
+    ├── en-US/
+    ├── fr-FR/
+    ├── de-DE/
+    └── es-ES/
+```
+
+- **Bundle ID** : `com.disco.RoastMyRoom`
+- **SKU** : `RoastMyRoom`
+- **Langues** : EN, FR, DE, ES
+- **IAP** : 3 subscriptions (weekly/annual/lifetime) + 4 consumables (points)
+- **Pipeline screenshots** : `python3 ASC/generate_screenshots.py` → génère `ASC/output/`
+- **Fastlane** : `fastlane/` — pipeline automatisé (utilise l'API Spaceship directement pour contourner les bugs de `deliver`)
+  - `bundle exec fastlane metadata` — upload métadonnées localisées (version + App Info)
+  - `bundle exec fastlane screenshots` — upload screenshots localisés
+  - `bundle exec fastlane upload_store_assets` — metadata + screenshots ensemble
+  - `bundle exec fastlane archive_upload` — archive Release + upload ASC
+  - `bundle exec fastlane release` — build + metadata + screenshots + soumission review
+- **Ruby** : Homebrew Ruby requis (`export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"`)
+- **Note** : `whats_new` n'est pas uploadable pour la v1.0 (première version)
+
+---
+
 ## Git
 
 ### Branches

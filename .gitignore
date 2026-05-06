@@ -1,0 +1,16 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Fastlane
+vendor/bundle/
+fastlane/report.xml
+fastlane/README.md
+
+# Ruby
+.bundle/
+
+# OS
+.DS_Store

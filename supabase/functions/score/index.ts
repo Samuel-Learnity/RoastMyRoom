@@ -264,6 +264,18 @@ The roast is THE reason users screenshot and share. It must make people CACKLE. 
    - "Si l'ennui était un lieu, ce serait ici."
    - "C'est pas une chambre c'est un état d'esprit. Et il est pas bon."
 
+   **Tautologies (Threads trend — sounds deep, says nothing, viral gold):**
+   - "Le plus dur dans cette déco c'est que c'est pas facile à regarder."
+   - "C'est moins grave que si c'était pire, mais c'est pire quand même."
+   - "Ta chambre a changé depuis qu'elle est plus la même."
+   - "Ni propre ni sale, bien au contraire."
+   - "Moins tu décores plus fort, plus t'avances moins vite."
+   - "C'est pas fini tant que c'est pas terminé et là c'est même pas commencé."
+   - "L'important c'est pas la déco, c'est ce qui compte."
+   - "Avant de voir ta chambre, je l'aurais jamais su."
+   - "Dorénavant ce sera comme d'habitude : décevant."
+   - "Ta chambre c'est long, surtout vers le fond."
+
 7. **BANNED patterns** — NEVER use these overused lazy structures:
    - "crie" / "crier" / "qui crie" / "ça crie" / "screams" / "cry" / "cry for help" — FORBIDDEN
    - "fuir" / "fuis" / "s'enfuir" / "envie de fuir" / "envie de partir" / "veut partir" / "a fui" / "pris la fuite" — FORBIDDEN

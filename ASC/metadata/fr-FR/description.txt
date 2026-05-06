@@ -1,0 +1,56 @@
+Tu trouves que ta chambre est stylée ? Laisse l'IA en juger.
+
+RoastMyRoom utilise une IA avancée pour analyser n'importe quelle pièce à partir d'une simple photo et te donner un score déco instantané sur 10 — avec un commentaire sans pitié que tu n'oublieras pas.
+
+COMMENT ÇA MARCHE
+1. Prends une photo de n'importe quelle pièce
+2. Obtiens ton score en quelques secondes
+3. Partage ta carte de résultat et défie tes amis
+
+ANALYSE DÉTAILLÉE
+Chaque scan décompose ta pièce en 5 dimensions :
+• Harmonie des couleurs — Comment tes couleurs fonctionnent ensemble
+• Proportions — Équilibre et agencement spatial
+• Éclairage — Qualité de la lumière naturelle et artificielle
+• Propreté — Ordre, organisation et rangement
+• Personnalité — Caractère et originalité de ton espace
+
+Chaque dimension a son propre score et commentaire, visualisé dans un radar chart pour voir tes forces et faiblesses d'un coup d'œil.
+
+ANALYSE DE PERSONNALITÉ
+Découvre ce que ta pièce dit de toi :
+• 3 traits de personnalité basés sur ton espace
+• Un match célébrité — quelle star a ton style ?
+• Une phrase de drague inspirée par ta déco
+
+CONSEILS ACTIONNABLES
+Reçois des suggestions déco personnalisées avec un score d'impact estimé. Sache exactement quoi changer et à quel point ça améliorera ta pièce.
+
+MOOD BOARD
+Reçois une palette de 5 couleurs et 3 suggestions déco concrètes adaptées à ton espace et ton style.
+
+DÉTECTION DE STYLE
+Ta pièce est classée parmi 17 styles de design — du Japandi à l'Industriel, du Scandinave à l'Art Déco. Découvre ton esthétique.
+
+PARTAGE & DÉFI
+Partage ta carte de score sur Instagram, iMessage ou n'importe quel réseau social. Défie tes amis de battre ton score et découvre qui a vraiment la plus belle pièce.
+
+GRATUIT
+• 2 scans gratuits par jour
+• Score global, badge de style et roast toujours visibles
+• Achète des points pour des scans supplémentaires
+
+PREMIUM
+• Scans quotidiens illimités
+• Les 5 sous-scores détaillés avec commentaires
+• 3 conseils déco personnalisés
+• Analyse de personnalité complète et mood board
+• Historique de scans illimité
+• Cartes de partage sans filigrane
+
+Disponible en abonnement hebdomadaire, annuel ou à vie.
+
+Conditions d'utilisation (CLUF) : https://web-neon-six-28.vercel.app/eula
+Politique de confidentialité : https://web-neon-six-28.vercel.app/privacy
+
+Télécharge maintenant et découvre ce que ta pièce dit vraiment de toi.

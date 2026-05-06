@@ -268,7 +268,7 @@ struct ResultView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .neonGlow(colors: scoreGlowColors, radius: 8, opacity: 0.5)
+            .neonGlow(colors: scoreGlowColors, radius: 8, opacity: 0.5, duration: 15)
             .scaleEffect(showScorePill ? 1 : 0.5)
             .opacity(showScorePill ? 1 : 0)
 
@@ -340,7 +340,7 @@ struct ResultView: View {
                 .foregroundStyle(.white)
                 .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
-                .aiGlow(colors: [Color.rsAccent, .purple, .cyan, .pink], cornerRadius: 12, glowRadius: 10, glowOpacity: 0.7)
+                .aiGlow(colors: [Color.rsAccent, .purple, .cyan, .pink], cornerRadius: 12, glowRadius: 10, glowOpacity: 0.7, duration: 15)
             }
 
             // Secondary: unlock with 1 point

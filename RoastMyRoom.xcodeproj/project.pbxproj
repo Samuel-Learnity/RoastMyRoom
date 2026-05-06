@@ -69,6 +69,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		289353E38A2DEF86C28260CD /* RoastMyRoomTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = RoastMyRoomTests;
+			sourceTree = "<group>";
+		};
 		7E0BF8732F4E1B9800BAFC68 /* RoastMyRoom */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -77,27 +82,22 @@
 			path = RoastMyRoom;
 			sourceTree = "<group>";
 		};
-		289353E38A2DEF86C28260CD /* RoastMyRoomTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = RoastMyRoomTests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		55CA9DCDBAF2650330A1050B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7E0BF86E2F4E1B9800BAFC68 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				7E0C6CB92F54917500F570D2 /* FirebaseAnalytics in Frameworks */,
 				7EC184D12F5124740088CAF9 /* StoreKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		55CA9DCDBAF2650330A1050B /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +198,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		17A44A35BCE1A812E4650EC5 /* RoastMyRoomTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */;
+			buildPhases = (
+				BFA1BE13201CF8ECF6DCD7F7 /* Sources */,
+				55CA9DCDBAF2650330A1050B /* Frameworks */,
+				9364B4C3B86E9FB1A565D6FD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				97C116957FABC1A41C5DADC3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				289353E38A2DEF86C28260CD /* RoastMyRoomTests */,
+			);
+			name = RoastMyRoomTests;
+			productName = RoastMyRoomTests;
+			productReference = 8660408BFA332DD7502284FC /* RoastMyRoomTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		7E0BF8702F4E1B9800BAFC68 /* RoastMyRoom */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7E0BF87E2F4E1B9900BAFC68 /* Build configuration list for PBXNativeTarget "RoastMyRoom" */;
@@ -221,27 +242,6 @@
 			productReference = 7E0BF8712F4E1B9800BAFC68 /* RoastMyRoom.app */;
 			productType = "com.apple.product-type.application";
 		};
-		17A44A35BCE1A812E4650EC5 /* RoastMyRoomTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */;
-			buildPhases = (
-				BFA1BE13201CF8ECF6DCD7F7 /* Sources */,
-				55CA9DCDBAF2650330A1050B /* Frameworks */,
-				9364B4C3B86E9FB1A565D6FD /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				97C116957FABC1A41C5DADC3 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				289353E38A2DEF86C28260CD /* RoastMyRoomTests */,
-			);
-			name = RoastMyRoomTests;
-			productName = RoastMyRoomTests;
-			productReference = 8660408BFA332DD7502284FC /* RoastMyRoomTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -252,12 +252,12 @@
 				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
-					7E0BF8702F4E1B9800BAFC68 = {
-						CreatedOnToolsVersion = 26.3;
-					};
 					17A44A35BCE1A812E4650EC5 = {
 						CreatedOnToolsVersion = 26.3;
 						TestTargetID = 7E0BF8702F4E1B9800BAFC68;
+					};
+					7E0BF8702F4E1B9800BAFC68 = {
+						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -345,6 +345,30 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5D0DB20AC470E6E7B9EAD175 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = W8FBDWFCMJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoomTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RoastMyRoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RoastMyRoom";
+			};
+			name = Release;
+		};
 		7E0BF87C2F4E1B9900BAFC68 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -473,7 +497,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RoastMyRoom/RoastMyRoom.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -500,7 +524,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -511,7 +535,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = RoastMyRoom/RoastMyRoom.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -538,7 +562,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -547,7 +571,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W8FBDWFCMJ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
@@ -566,33 +590,18 @@
 			};
 			name = Debug;
 		};
-		5D0DB20AC470E6E7B9EAD175 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = W8FBDWFCMJ;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.disco.RoastMyRoomTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/RoastMyRoom.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/RoastMyRoom";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				992CA4D46D7EEE0AEFF3FCC6 /* Debug */,
+				5D0DB20AC470E6E7B9EAD175 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7E0BF86C2F4E1B9800BAFC68 /* Build configuration list for PBXProject "RoastMyRoom" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -607,15 +616,6 @@
 			buildConfigurations = (
 				7E0BF87F2F4E1B9900BAFC68 /* Debug */,
 				7E0BF8802F4E1B9900BAFC68 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0C6A489D727547B5526AF473 /* Build configuration list for PBXNativeTarget "RoastMyRoomTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				992CA4D46D7EEE0AEFF3FCC6 /* Debug */,
-				5D0DB20AC470E6E7B9EAD175 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

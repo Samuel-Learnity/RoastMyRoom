@@ -1,0 +1,262 @@
+default_platform(:ios)
+
+# --- Constants ---
+SCHEME = "RoastMyRoom"
+PROJECT = "RoastMyRoom.xcodeproj"
+METADATA_PATH = "../ASC/metadata"
+SCREENSHOTS_PATH = "../ASC/output"
+REVIEW_NOTES_PATH = "../ASC/review_notes.txt"
+COPYRIGHT = File.read("../ASC/metadata/copyright.txt").strip rescue "© 2026 Disco. All rights reserved."
+LOCALES = ["en-US", "fr-FR", "de-DE", "es-ES"]
+
+platform :ios do
+
+  # -------------------------------------------------------
+  # Ensure all required localizations exist on ASC
+  # -------------------------------------------------------
+  desc "Create missing localizations on App Store Connect"
+  lane :ensure_localizations do
+    require 'spaceship'
+
+    Spaceship::ConnectAPI.login(CredentialsManager::AppfileConfig.try_fetch_value(:apple_id))
+    app = Spaceship::ConnectAPI::App.find(CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
+    version = app.get_edit_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    UI.user_error!("No editable version found") unless version
+
+    localizations = version.get_app_store_version_localizations
+    existing_locales = localizations.map(&:locale)
+    missing = LOCALES - existing_locales
+
+    missing.each do |locale|
+      UI.message("Creating version localization for #{locale}...")
+      version.create_app_store_version_localization(attributes: { locale: locale })
+    end
+
+    app_info = app.fetch_edit_app_info
+    if app_info
+      info_localizations = app_info.get_app_info_localizations
+      existing_info_locales = info_localizations.map(&:locale)
+      info_missing = LOCALES - existing_info_locales
+      info_missing.each do |locale|
+        UI.message("Creating App Info localization for #{locale}...")
+        app_info.create_app_info_localization(attributes: { locale: locale })
+      end
+    end
+
+    UI.success("All localizations ensured: #{LOCALES.join(', ')}")
+  end
+
+  # -------------------------------------------------------
+  # Upload metadata via direct API (bypasses deliver bugs)
+  # -------------------------------------------------------
+  desc "Upload localized metadata to App Store Connect"
+  lane :metadata do
+    ensure_localizations
+
+    require 'spaceship'
+    Spaceship::ConnectAPI.login(CredentialsManager::AppfileConfig.try_fetch_value(:apple_id))
+    app = Spaceship::ConnectAPI::App.find(CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
+    version = app.get_edit_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    localizations = version.get_app_store_version_localizations
+
+    # Upload version-level localized metadata
+    version_fields = {
+      'description' => :description,
+      'keywords' => :keywords,
+      'promotional_text' => :promotional_text,
+      'support_url' => :support_url,
+      'marketing_url' => :marketing_url
+    }
+
+    LOCALES.each do |locale|
+      loc = localizations.find { |l| l.locale == locale }
+      next unless loc
+      dir = File.join(METADATA_PATH, locale)
+      next unless File.directory?(dir)
+
+      attrs = {}
+      version_fields.each do |file, key|
+        path = File.join(dir, "#{file}.txt")
+        if File.exist?(path)
+          content = File.read(path).strip
+          attrs[key] = content unless content.empty?
+        end
+      end
+
+      UI.message("Updating version metadata for #{locale}...")
+      loc.update(attributes: attrs) unless attrs.empty?
+    end
+
+    # Upload App Info localized metadata
+    app_info = app.fetch_edit_app_info
+    if app_info
+      info_locs = app_info.get_app_info_localizations
+      LOCALES.each do |locale|
+        info_loc = info_locs.find { |l| l.locale == locale }
+        next unless info_loc
+        dir = File.join(METADATA_PATH, locale)
+
+        attrs = {}
+        { 'name' => :name, 'subtitle' => :subtitle, 'privacy_policy_url' => :privacyPolicyUrl }.each do |file, key|
+          path = File.join(dir, "#{file}.txt")
+          if File.exist?(path)
+            content = File.read(path).strip
+            attrs[key] = content unless content.empty?
+          end
+        end
+
+        UI.message("Updating App Info for #{locale}...")
+        info_loc.update(attributes: attrs) unless attrs.empty?
+      end
+    end
+
+    # Upload copyright
+    UI.message("Setting copyright: #{COPYRIGHT}")
+    version.update(attributes: { copyright: COPYRIGHT })
+
+    UI.success("Metadata uploaded successfully!")
+  end
+
+  # -------------------------------------------------------
+  # Upload screenshots via direct API
+  # -------------------------------------------------------
+  desc "Upload localized screenshots to App Store Connect"
+  lane :screenshots do
+    ensure_localizations
+
+    require 'spaceship'
+    require_relative '../vendor/bundle/ruby/4.0.0/gems/fastlane-2.232.2/deliver/lib/deliver/loader'
+
+    Spaceship::ConnectAPI.login(CredentialsManager::AppfileConfig.try_fetch_value(:apple_id))
+    app = Spaceship::ConnectAPI::App.find(CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
+    version = app.get_edit_app_store_version(platform: Spaceship::ConnectAPI::Platform::IOS)
+    localizations = version.get_app_store_version_localizations
+
+    screenshots = Deliver::Loader.load_app_screenshots(File.expand_path(SCREENSHOTS_PATH), false)
+    screenshots_per_language = screenshots.group_by(&:language)
+
+    UI.message("Found #{screenshots.count} screenshots across #{screenshots_per_language.keys.count} languages")
+
+    screenshots_per_language.each do |language, lang_screenshots|
+      localization = localizations.find { |l| l.locale == language }
+      next unless localization
+
+      by_type = lang_screenshots.group_by(&:display_type)
+      by_type.each do |display_type, type_screenshots|
+        sets = localization.get_app_screenshot_sets
+        set = sets.find { |s| s.screenshot_display_type == display_type }
+        unless set
+          UI.message("Creating screenshot set for #{language} #{display_type}")
+          set = localization.create_app_screenshot_set(attributes: { screenshotDisplayType: display_type })
+        end
+
+        # Delete existing screenshots
+        existing = set.app_screenshots || []
+        existing.each { |s| s.delete! }
+
+        type_screenshots.each do |screenshot|
+          UI.message("Uploading #{language}/#{File.basename(screenshot.path)}...")
+          set.upload_screenshot(path: screenshot.path, wait_for_processing: false)
+        end
+      end
+    end
+
+    UI.success("#{screenshots.count} screenshots uploaded successfully!")
+  end
+
+  # -------------------------------------------------------
+  # Generate screenshots from source images
+  # -------------------------------------------------------
+  desc "Generate localized screenshots using Python script"
+  lane :generate_screenshots do
+    sh("cd .. && python3 ASC/generate_screenshots.py")
+    UI.success("Screenshots generated in ASC/output/")
+  end
+
+  # -------------------------------------------------------
+  # Build the app for App Store
+  # -------------------------------------------------------
+  desc "Build the app for App Store distribution"
+  lane :build do
+    build_app(
+      project: PROJECT,
+      scheme: SCHEME,
+      export_method: "app-store",
+      output_directory: "./build",
+      clean: true,
+      silent: true
+    )
+  end
+
+  # -------------------------------------------------------
+  # Upload build to TestFlight
+  # -------------------------------------------------------
+  desc "Upload build to TestFlight"
+  lane :testflight_upload do
+    build
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+    UI.success("Build uploaded to TestFlight!")
+  end
+
+  # -------------------------------------------------------
+  # Full release: metadata + screenshots + build + submit
+  # -------------------------------------------------------
+  desc "Full App Store release: build + upload metadata + screenshots + submit"
+  lane :release do
+    build
+    metadata
+    screenshots
+
+    deliver(
+      skip_binary_upload: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      automatic_release: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      app_review_information: {
+        notes: File.read(REVIEW_NOTES_PATH)
+      },
+      submission_information: {
+        add_id_info_uses_idfa: false
+      }
+    )
+    UI.success("App submitted for review!")
+  end
+
+  # -------------------------------------------------------
+  # Upload metadata + screenshots (no build)
+  # -------------------------------------------------------
+  desc "Upload metadata and screenshots together"
+  lane :upload_store_assets do
+    metadata
+    screenshots
+    UI.success("Store assets uploaded successfully!")
+  end
+
+  # -------------------------------------------------------
+  # Increment build number
+  # -------------------------------------------------------
+  desc "Increment build number"
+  lane :bump do
+    increment_build_number(
+      xcodeproj: PROJECT
+    )
+    build_number = get_build_number(xcodeproj: PROJECT)
+    UI.success("Build number bumped to #{build_number}")
+  end
+
+  # -------------------------------------------------------
+  # Archive and upload to App Store Connect
+  # -------------------------------------------------------
+  desc "Archive and upload build to App Store Connect"
+  lane :archive_upload do
+    sh("xcodebuild -project ../#{PROJECT} -scheme #{SCHEME} -configuration Release -archivePath ../build/#{SCHEME}.xcarchive archive -quiet")
+    sh("xcodebuild -exportArchive -archivePath ../build/#{SCHEME}.xcarchive -exportOptionsPlist ../ExportOptions.plist -exportPath ../build/export -quiet")
+    UI.success("Build archived and uploaded to App Store Connect!")
+  end
+
+end
